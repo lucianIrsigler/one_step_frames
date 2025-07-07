@@ -1,7 +1,11 @@
+__all__ = ["findAtomicFormulas", "getConnectives", "checkIfFree", "initAtomicFormula", "initSubformula"]
+
 import re
 
-modalOperators = ["#","@"]
-logicConnectives = ["&","|"]
+
+modalOperators = ["#","@","#'","@'"]
+#TODO add <-> if needed
+logicConnectives = ["=>","<","<'","#","#'","@","@'","~","i*","i!","i","^","|","&","->","<->"]
 
 
 def findAtomicFormulas(formula:str,additionalConnectives:list[str]=[])->list[str]:
@@ -23,6 +27,10 @@ def findAtomicFormulas(formula:str,additionalConnectives:list[str]=[])->list[str
 
     delimiters = f'[{"".join(symbols)}]'
     subformulasAntecdent = re.split(delimiters,formula)
+
+    # Remove empty strings from the list
+    subformulasAntecdent = [subformula for subformula in subformulasAntecdent if subformula.strip()]
+    
     return subformulasAntecdent
 
 
@@ -30,7 +38,7 @@ def getConnectives(formula:str,additionalConnectives:list[str]=[])->list[str]:
     """Given some formula, it returns all the connectives used in order.
     Given #x&x|y, it returns [&,|]
 
-    Args:∀u
+    Args:
         formula (str): formula to split
 
     Returns:
@@ -42,9 +50,19 @@ def getConnectives(formula:str,additionalConnectives:list[str]=[])->list[str]:
     else:
         additionalConnectives.extend(logicConnectives)
         symbols = additionalConnectives.copy()
+
+    symbols = sorted(symbols, key=len, reverse=True)
     delimiters = f"(?:{'|'.join(map(re.escape,symbols))})"
     connectives = re.findall(delimiters,formula)
     return connectives
+
+
+def getVariable(formula:str)->list[str]:
+    outputList = []
+    for i in formula:
+        if i.isalpha() and i!="i" and i not in modalOperators:
+            outputList.append(i)
+    return outputList
 
 
 def checkIfFree(atomicFormula:str)->bool:
@@ -98,7 +116,12 @@ def initAtomicFormula(formula:str)->str:
 
 def initSubformula(subformula:str)->str:
     output = ""
-    antecedent,consequent = subformula.split("->")
+    subformula = subformula.strip()
+    if "->" not in subformula:
+        antecedent = subformula
+        consequent = ""
+    else:
+        antecedent,consequent = subformula.split("->")
     
     #TODO take length of subformulaAntecdent, and connectives. if 
     # connectives -1 length of subformulaAnt., then its valid?
@@ -119,6 +142,9 @@ def initSubformula(subformula:str)->str:
             connectiveCounter+=1
     
     #STEP 2
+    if consequent == "":
+        return output
+    
     output+="<"
 
     #STEP 3
