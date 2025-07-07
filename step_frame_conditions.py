@@ -35,7 +35,7 @@ nominalTracker = Nominal()
 abstractTree = AbstractSyntaxTree(operators)
 
 
-def init_procedure(rule:str)->str:
+def initProcedure(rule:str)->str:
     """Constructs the initial formula from the reduced rule
 
     Args:
@@ -52,6 +52,6 @@ def init_procedure(rule:str)->str:
     return output
 
 rule = "#x->y/#x->#y"
-formula = init_procedure(rule)
+formula = initProcedure(rule)
 abstractTree.buildTree(formula)
 
