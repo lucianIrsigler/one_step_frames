@@ -117,12 +117,18 @@ def initAtomicFormula(formula:str)->str:
         return formula
 
 
-def initSubformula(subformula:str)->str:
-    output = ""
-    subformula = subformula.strip()
-    if "->" not in subformula:
-        antecedent = subformula
-        consequent = ""
+def getLeafNodes(node:Node,parent=None,result=None):
+    if result is None:
+        result = []
+
+    if node is None:
+        return result
+    
+    if node.arity==2:
+        if (node.left!=None):
+            getLeafNodes(node.left,node,result)
+        if (node.right!=None):
+            getLeafNodes(node.right,node,result)
     else:
         if node.child!=None:
             getLeafNodes(node.child,node,result)
