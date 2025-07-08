@@ -1,4 +1,3 @@
-
 class Nominal:
     def __init__(self):
         self.nominal_dict = {

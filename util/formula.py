@@ -1,7 +1,10 @@
 __all__ = ["findAtomicFormulas", "getConnectives", "checkIfFree", "initAtomicFormula", "initSubformula"]
 
 import re
-
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).parent.parent))
+from AST.abstract_syntax_tree import AbstractSyntaxTree,Node
 
 modalOperators = ["#","@","#'","@'"]
 #TODO add <-> if needed
@@ -114,51 +117,50 @@ def initAtomicFormula(formula:str)->str:
         return formula
 
 
-def initSubformula(subformula:str)->str:
-    output = ""
-    subformula = subformula.strip()
-    if "->" not in subformula:
-        antecedent = subformula
-        consequent = ""
+def getLeafNodes(node:Node,parent=None,result=None):
+    if result is None:
+        result = []
+
+    if node is None:
+        return result
+    
+    if node.arity==2:
+        if (node.left!=None):
+            getLeafNodes(node.left,node,result)
+        if (node.right!=None):
+            getLeafNodes(node.right,node,result)
     else:
-        antecedent,consequent = subformula.split("->")
-    
-    #TODO take length of subformulaAntecdent, and connectives. if 
-    # connectives -1 length of subformulaAnt., then its valid?
+        if node.child!=None:
+            getLeafNodes(node.child,node,result)
+        else:
+            result.append((node,parent))
 
-    #STEP 1
-    #antecedent
+    return result
 
-    subformulaAntecedent = findAtomicFormulas(antecedent)
-    connectives = getConnectives(antecedent)
-    connectiveCounter = 0
 
-    for i in range(len(subformulaAntecedent)):
-        atomicForm = initAtomicFormula(subformulaAntecedent[i])
-        output += atomicForm
+def initFormula(subformula:str)->str:
+    subformula = subformula.replace("/","=>")
+    subformula = subformula.replace("->","<")
+    ast = AbstractSyntaxTree()
+    ast.buildTree(subformula)
+    # Get leaf nodes and their parents
+    leafAndParents = getLeafNodes(ast.root,None,[])
+    for i in leafAndParents:
+        if i[1]==None:
+            #Must be root
+            parentValue = ""
+        else:
+            parentValue = i[1].value
+        
+        childValue = i[0].value
+        if (parentValue not in modalOperators):
+            res = initAtomicFormula(childValue)
+            i[0].value = res
 
-        if (connectiveCounter != len(connectives)):
-            output += connectives[connectiveCounter]
-            connectiveCounter+=1
-    
-    #STEP 2
-    if consequent == "":
-        return output
-    
-    output+="<"
+    return ast.toInfix()
 
-    #STEP 3
-    #consequent
-    subformulaConsequent = findAtomicFormulas(consequent)
-    connectives = getConnectives(consequent)
-    connectiveCounter = 0
-    
-    for i in range(len(subformulaConsequent)):
-        atomicForm = initAtomicFormula(subformulaConsequent[i])
-        output += atomicForm
 
-        if (connectiveCounter != len(connectives)):
-            output += connectives[connectiveCounter]
-            connectiveCounter+=1
-
-    return output
+# if __name__=="__main__":
+#     rule = "x"
+#     output = initFormula(rule)
+#     print(output)

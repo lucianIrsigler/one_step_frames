@@ -1,57 +1,38 @@
-from util.formula import initSubformula
+from util.formula import initFormula
 from util.nomial import Nominal
-from util.preprocess import preprocess
 from AST.abstract_syntax_tree import AbstractSyntaxTree
-from AST.abstract_operator import AbstractOperator
+from util.errors import InputError
 
-operators = [
-    # perf 2
-    AbstractOperator("=>",2,2),
-
-    # perf 1
-    AbstractOperator("<",2,1),
-    AbstractOperator("<'",2,1),
-
-    #perf 0
-    AbstractOperator("#",1),
-    AbstractOperator("#'",1),
-    AbstractOperator("@",1),
-    AbstractOperator("@'",1),
-    AbstractOperator("~",1),
-    AbstractOperator("i*",1),
-    AbstractOperator("i!",1),
-    AbstractOperator("i",1),
-
-    AbstractOperator("^",2),
-    AbstractOperator("&",2),
-    AbstractOperator("->",2),
-    AbstractOperator("<->",2),
-
-
-]
 nominalTracker = Nominal()
 
-# TODO : make operators default so less initialization is needed
-abstractTree = AbstractSyntaxTree(operators)
+def parseRule(rule:str):
+    if (rule.find("/")==-1):
+        raise InputError("Can't find /")
 
+    arguements = rule.split("/")
+    arguements = [i.strip() for i in arguements]
 
-def initProcedure(rule:str)->str:
-    """Constructs the initial formula from the reduced rule
+    if (arguements[0]==""):
+        rule = arguements[1]
+    else:
+        # Don't think this really makes sense, because then you dont have a conclusion
+        rule = arguements[0]
 
-    Args:
-        rule (str): rule to initialize
+    return rule
 
-    Returns:
-        str: initialized rule
-    """
-    output = ""
-    premise,conclusion = rule.split("/")
-    output += initSubformula(premise)
-    output += "=>"
-    output += initSubformula(conclusion)
-    return output
+def findStepFrameCondition(rule:str):
+    formula = initFormula(rule)
+    return formula
 
-rule = "#x->y/#x->#y"
-formula = initProcedure(rule)
-abstractTree.buildTree(formula)
+if __name__=="__main__":
+    rule = "/#x->x"
+    rule = parseRule(rule)
+    formula = findStepFrameCondition(rule)
+    print(formula)
+
+    # tree = AbstractSyntaxTree()
+    # tree.buildTree(formula)
+    # #Can start cooking inference rules now
+    # if (tree.root.left.value=="<"):
+    #     print(tree.toInfix(tree.root.left))
 
