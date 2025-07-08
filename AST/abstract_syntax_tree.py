@@ -54,6 +54,7 @@ class Node:
     def __str__(self) -> str:
         return f"Node(arity:{self.arity}, value:{self.value})"
 
+
 class AbstractSyntaxTree:
     def __init__(self, operators: list[AbstractOperator]=defaultOperators) -> None:
         self.root = None

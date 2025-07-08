@@ -3,8 +3,8 @@ from util.preprocess import checkIfNoTextAfterCharacter, checkIfNoTextBeforeChar
 from util.errors import InputError
 import util.formula as formula_util
 
-class UtilTesting(unittest.TestCase):
-    # Preprocessing Tests
+
+class TestPreprocess(unittest.TestCase):
     def test_checkIfNoTextAfterCharacter(self):
         self.assertTrue(checkIfNoTextAfterCharacter("test#", "#"))
         self.assertFalse(checkIfNoTextAfterCharacter("test#text", "#"))
@@ -23,23 +23,26 @@ class UtilTesting(unittest.TestCase):
         with self.assertRaises(InputError):
             checkIfValidCharacters(invalid_rule)
 
-    # Formula tests
+
+class TestFormula(unittest.TestCase):
     def test_checkIfFree(self):
         self.assertTrue(formula_util.checkIfFree("x"))
         self.assertFalse(formula_util.checkIfFree("#x"))
         self.assertFalse(formula_util.checkIfFree("@x"))
+        self.assertFalse(formula_util.checkIfFree("#@'@x"))
     
     def test_initAtomicFormula(self):
         self.assertEqual(formula_util.initAtomicFormula("x"), "i(x)")
+        self.assertEqual(formula_util.initAtomicFormula("y"), "i(y)")
         self.assertEqual(formula_util.initAtomicFormula("#x"), "#x")
         self.assertEqual(formula_util.initAtomicFormula("@x"), "@x")
 
-    """def test_initSubformula(self):
-        self.assertEqual(formula_util.initSubformula("x"), "i(x)")
-        self.assertEqual(formula_util.initSubformula("#x"), "#x")
-        self.assertEqual(formula_util.initSubformula("@x"), "@x")
-        self.assertEqual(formula_util.initSubformula("x&y"), "i(x)&i(y)")
-        self.assertEqual(formula_util.initSubformula("x=>y"), "i(x)=>i(y)")
+    def test_initFormula(self):
+        self.assertEqual(formula_util.initFormula("x"), "i(x)")
+        self.assertEqual(formula_util.initFormula("#x"), "#x")
+        self.assertEqual(formula_util.initFormula("@x"), "@x")
+        self.assertEqual(formula_util.initFormula("x&y"), "i(x)&i(y)")
+        self.assertEqual(formula_util.initFormula("x=>y"), "i(x)=>i(y)")
 
     def test_findAtomicFormulas(self):
         formula = "x&y|z"
@@ -63,4 +66,7 @@ class UtilTesting(unittest.TestCase):
         self.assertEqual(formula_util.getVariable("i"), [])
         self.assertEqual(formula_util.getVariable("#"), [])
         self.assertEqual(formula_util.getVariable("@'=>@"), [])
-"""
+
+
+if __name__ == "__main__":
+    unittest.main()

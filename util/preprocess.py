@@ -4,7 +4,6 @@ from util.errors import InputError
 validCharacters = ["#","@","->","<->","#'","@'","&",
                    "|","~","0","1","/","<=","&'","=>",",","<'"]
 
-# START PREPROCESSING
 def checkIfNoTextAfterCharacter(string:str,character:str)->bool:
     """Checks if there is text after a certain character in a string
 
@@ -102,5 +101,3 @@ def preprocess(rule:str)->bool:
         return False
 
     return True
-
-#END PREPROCESSING
