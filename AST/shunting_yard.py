@@ -1,61 +1,107 @@
 import re
 
-logicConnectives = ["=>","<","<'","#","#'","@","@'","~","i*","i!","i","^","|","&","->","<->"]
+operator_map = {
+    "<->": "=",
+    "=>": ">",
+    "->": "[",
+    "<": "<",
+    "<'": "]",
+    "#'": "$",
+    "#": "#",
+    "@'": "%",
+    "@": "@",
+    "~": "~",
+    "i*": "*",
+    "i!": "!",
+    "i": "i",
+    "^": "^",
+    "|": "|",
+    "&": "&"
+}
 
 associativity_map = {
-    "=>": "R",
+    ">": "R",   # => and -> both mapped to >
+    "=": "L",   # <-> mapped to =
     "<": "L",
-    "<'": "L",
+    "[": "L",   # <' mapped to [
     "#": "R",
-    "#'": "R",
+    "$": "R",   # #' mapped to $
     "@": "R",
-    "@'": "R",
+    "%": "R",   # @' mapped to %
     "~": "R",
-    "i*": "R",
-    "i!": "R",
+    "*": "R",   # i* mapped to *
+    "!": "R",   # i! mapped to !
     "i": "R",
     "^": "R",
     "|": "L",
     "&": "L",
-    "->": "R",
-    "<->": "L"
+    "]": "L" 
 }
 
-# Fixed precedence map with proper hierarchy
 precedence_map = {
-    "=>": 1,    # implication - lowest precedence
-    "<": 3,     # comparison - higher precedence
-    "<'": 3,    # comparison
-    "#": 5,     # unary operators - highest precedence
-    "#'": 5,
-    "@": 5,
-    "@'": 5,
-    "~": 5,
-    "i*": 5,
-    "i!": 5,
-    "i": 5,
-    "^": 4,     # conjunction/disjunction
+    ">": 1,    # => and -> both mapped to >
+    "=": 1,    # <-> mapped to =
     "|": 2,
     "&": 2,
-    "->": 1,    # implication
-    "<->": 1    # equivalence
+    "<": 3,
+    "[": 3,    # <' mapped to [
+    "^": 4,
+    "]": 4,
+    "#": 6,
+    "$": 6,
+    "@": 6,
+    "%": 6,
+    "~": 5,
+    "*": 5,
+    "!": 5,
+    "i": 5
 }
 
-pattern = r"i\([a-zA-Z]\)"
+regexPatterns={
+    "OPERATOR": r"i|[=><\[\]\#\$\@\%\~\*\!\^|&]",  # i operator alone first
+    "OPERAND": r"[a-hj-zA-HJ-Z]",                  # operands single letter excluding 'i'
+    "SKIP": r"\s+",
+    "MISMATCH": r"."
+}
+
+
+def replaceCharacters(formula: str, reverse: bool = False) -> str:
+    if not reverse:
+        for i, j in operator_map.items():
+            formula = formula.replace(i, j)
+
+        formula = formula.replace("(", "")
+        formula = formula.replace(")", "")
+    else:
+        reverse_operator_map = {v: k for k, v in operator_map.items()}
+        for i, j in reverse_operator_map.items():
+            formula = formula.replace(i, j)
+
+        unary_ops = ["i*", "i!", "i"]
+        unary_syms = [operator_map[op] for op in unary_ops]
+
+        prev = None
+        while formula != prev:
+            prev = formula
+            # Add parentheses around non-parenthesized operand
+            formula = re.sub(
+                rf"({'|'.join(map(re.escape, unary_syms))})(?!\s*\()([a-zA-Z][a-zA-Z0-9_]*)",
+                r"\1(\2)",
+                formula
+            )
+        
+    return formula
+
 
 def tokenize(formula):
+    #TODO make like list from the dict directly
     token_specification = [
-        ("I_OPERAND", r"i\([a-zA-Z][a-zA-Z0-9_]*\)"),
-        # Fixed: Added '?' to match optional prime after unary operators
-        ("UNARY_OP_OPERAND", r"[#@~]'?(?:[a-zA-Z][a-zA-Z0-9_]*)"),
-        # Fixed: Updated OPERATOR pattern to properly match prime variants
-        ("OPERATOR", r"=>|->|<->|<'|#'|@'|i[*!]?|[#@~^|&<]"),
-        ("OPERAND", r"[a-zA-Z][a-zA-Z0-9_]*"),
-        ("LPAREN", r"\("),
-        ("RPAREN", r"\)"),
-        ("SKIP", r"\s+"),
-        ("MISMATCH", r"."),
+        ("OPERATOR", regexPatterns["OPERATOR"]),  # i operator alone first
+        ("OPERAND",  regexPatterns["OPERAND"]),                  # operands single letter excluding 'i'
+        ("SKIP", regexPatterns["SKIP"]),
+        ("MISMATCH", regexPatterns["MISMATCH"]),
     ]
+
     tok_regex = '|'.join('(?P<%s>%s)' % pair for pair in token_specification)
     get_token = re.compile(tok_regex).match
     pos = 0
@@ -76,25 +122,30 @@ def tokenize(formula):
         raise RuntimeError(f"Unexpected character at end of input: {formula[pos:]}")
     return tokens
 
+
 def checkOperand(token: str) -> bool:
-    return bool(re.fullmatch(r"i\([a-zA-Z][a-zA-Z0-9_]*\)", token) or 
-                # Fixed: Added '?' to match optional prime in operand check
-                re.fullmatch(r"[#@~]'?[a-zA-Z][a-zA-Z0-9_]*", token) or 
-                re.fullmatch(r"[a-zA-Z][a-zA-Z0-9_]*", token))
+    return bool(re.fullmatch(regexPatterns["OPERAND"], token))
+
 
 def checkOperator(token: str) -> bool:
-    return token in logicConnectives
+    return bool(re.fullmatch(regexPatterns["OPERATOR"], token))
 
-def shunting_yard(formula: str) -> str:
+
+def shuntingYardAlgorithm(formula: str) -> str:
     output = ""
     operatorStack = []
     tokens = tokenize(formula)
+    # print(tokens)
     
-    print(f"Tokens: {tokens}")  # Debug output
+    # Based on your mappings, these are unary prefix operators
+    unary_operators = {"#", "$", "@", "%", "~", "*", "!", "i"}
     
     for token in tokens:
         if checkOperand(token):
             output += token + " "
+            # After an operand, pop any pending unary operators
+            while operatorStack and operatorStack[-1] in unary_operators:
+                output += operatorStack.pop() + " "
         elif token == '(':
             operatorStack.append(token)
         elif token == ')':
@@ -102,17 +153,23 @@ def shunting_yard(formula: str) -> str:
                 output += operatorStack.pop() + " "
             operatorStack.pop()  # pop '('
         elif checkOperator(token):
-            while (
-                operatorStack
-                and checkOperator(operatorStack[-1])
-                and (
-                    (associativity_map[token] == "L" and precedence_map[token] <= precedence_map[operatorStack[-1]])
-                    or
-                    (associativity_map[token] == "R" and precedence_map[token] < precedence_map[operatorStack[-1]])
-                )
-            ):
-                output += operatorStack.pop() + " "
-            operatorStack.append(token)
+            if token in unary_operators:
+                # Unary operators - just push onto stack, will be popped after operand
+                operatorStack.append(token)
+            else:
+                # Binary operators
+                while (
+                    operatorStack
+                    and operatorStack[-1] != '('
+                    and checkOperator(operatorStack[-1])
+                    and (
+                        (associativity_map[token] == "L" and precedence_map[token] <= precedence_map[operatorStack[-1]])
+                        or
+                        (associativity_map[token] == "R" and precedence_map[token] < precedence_map[operatorStack[-1]])
+                    )
+                ):
+                    output += operatorStack.pop() + " "
+                operatorStack.append(token)
         else:
             raise RuntimeError(f"Unknown token: {token}")
     
@@ -130,31 +187,12 @@ def postfix_to_infix(postfix_expr: str) -> str:
         if checkOperand(token):
             stack.append(token)
         elif checkOperator(token):
-            # Determine if it's a unary operator based on context
-            # In postfix, unary operators should have exactly 1 operand
-            if token in ["#", "#'", "@", "@'", "~", "i*", "i!", "i"] and len(stack) >= 1:
+            unary_operators = {"#", "$", "@", "%", "~", "*", "!", "i"}
+            if token in unary_operators:
+                if len(stack) < 1:
+                    raise RuntimeError(f"Not enough operands for unary operator: {token}")
                 operand = stack.pop()
-                # Add parentheses if operand is complex
                 if any(op in operand for op in [" => ", " -> ", " <-> ", " & ", " | ", " < ", " <' ", " ^ "]):
-                    stack.append(f"{token}({operand})")
-                else:
-                    stack.append(f"{token}{operand}")
-            elif token == "^" and len(stack) >= 2:
-                # ^ can be binary or unary, treat as binary if 2 operands available
-                right = stack.pop()
-                left = stack.pop()
-                
-                # Add parentheses based on precedence
-                if needs_parentheses(left, token, "left"):
-                    left = f"({left})"
-                if needs_parentheses(right, token, "right"):
-                    right = f"({right})"
-                
-                stack.append(f"{left} {token} {right}")
-            elif token == "^" and len(stack) >= 1:
-                # Treat ^ as unary
-                operand = stack.pop()
-                if any(op in operand for op in [" => ", " -> ", " <-> ", " & ", " | ", " < ", " <' "]):
                     stack.append(f"{token}({operand})")
                 else:
                     stack.append(f"{token}{operand}")
@@ -162,13 +200,6 @@ def postfix_to_infix(postfix_expr: str) -> str:
                 # Binary operators
                 right = stack.pop()
                 left = stack.pop()
-                
-                # Add parentheses based on precedence to avoid ambiguity
-                if needs_parentheses(left, token, "left"):
-                    left = f"({left})"
-                if needs_parentheses(right, token, "right"):
-                    right = f"({right})"
-                
                 stack.append(f"{left} {token} {right}")
             else:
                 raise RuntimeError(f"Not enough operands for operator: {token}")
@@ -180,35 +211,9 @@ def postfix_to_infix(postfix_expr: str) -> str:
     
     return stack[0]
 
-def needs_parentheses(operand: str, current_op: str, position: str) -> bool:
-    """Determine if operand needs parentheses based on operator precedence"""
-    # If operand doesn't contain operators, no parentheses needed
-    if not any(f" {op} " in operand for op in logicConnectives):
-        return False
-    
-    # Extract the main operator from the operand
-    operand_op = None
-    for op in sorted(logicConnectives, key=len, reverse=True):
-        if f" {op} " in operand:
-            operand_op = op
-            break
-    
-    if operand_op is None:
-        return False
-    
-    current_prec = precedence_map.get(current_op, 0)
-    operand_prec = precedence_map.get(operand_op, 0)
-    current_assoc = associativity_map.get(current_op, "L")
-    
-    # Add parentheses if operand has lower precedence
-    if operand_prec < current_prec:
-        return True
-    
-    # For same precedence, consider associativity
-    if operand_prec == current_prec:
-        if current_assoc == "L" and position == "right":
-            return True
-        elif current_assoc == "R" and position == "left":
-            return True
-    
-    return False
+
+def shuntingYard(formula:str):
+    inputFormula = replaceCharacters(formula)
+    postfix = shuntingYardAlgorithm(inputFormula)
+    reverted = replaceCharacters(postfix, True)
+    return reverted
