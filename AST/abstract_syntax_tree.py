@@ -1,7 +1,6 @@
 import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
-from util.formula import getConnectives, findAtomicFormulas
 from AST.shunting_yard import shuntingYard
 from AST.abstract_operator import AbstractOperator
 from AST.AST_error import ASTError
@@ -119,6 +118,36 @@ class AbstractSyntaxTree:
         self.root = stack[0]
         return self.root
     
+
+    def clearNode(self,node: Node):
+        if node is None:
+            return
+        if node.arity == 1:
+            if (node.child!=None):
+                self.clearNode(node.child)
+                node.child = None
+        elif node.arity == 2:
+            if (node.left!=None):
+                self.clearNode(node.left)
+                node.left = None
+            if (node.right!=None):
+                self.clearNode(node.right)
+                node.right = None
+        # Remove reference to value as well (optional)
+        node.value = None
+
+
+    def clearTree(self):
+        """Clear all nodes in the tree to help with deallocation."""
+        if (self.root!=None):
+            self.clearNode(self.root)
+
+        self.root = None
+        self.nodes.clear()  # if you are tracking nodes in self.nodes list
+        self.variables.clear()
+        self.constants.clear()
+
+
     def printTree(self):
         """Print the tree structure in a readable format"""
         if self.root is None:
@@ -130,6 +159,7 @@ class AbstractSyntaxTree:
         self._printNode(self.root, "", True)
         print("=" * 30)
     
+
     def _printNode(self, node: Node, prefix: str, isLast: bool):
         """Helper method to recursively print nodes with tree structure"""
         if node is None:
@@ -160,6 +190,7 @@ class AbstractSyntaxTree:
                 if node.right is not None:
                     self._printNode(node.right, new_prefix, True)
     
+
     def printTreeCompact(self):
         """Print a more compact representation of the tree"""
         if self.root is None:
@@ -169,6 +200,7 @@ class AbstractSyntaxTree:
         print("Compact Tree Representation:")
         print(self._nodeToString(self.root))
     
+
     def _nodeToString(self, node: Node) -> str:
         """Convert a node and its children to a string representation"""
         if node is None:
@@ -191,10 +223,35 @@ class AbstractSyntaxTree:
         else:
             return str(node.value)
         
+    def toInfix(self, node=None) -> str:
+        """Reconstruct the infix formula string from the AST without parentheses."""
+        if node is None:
+            node = self.root
+        if node is None:
+            return ""
+
+        if node.arity == 0:
+            return str(node.value)
+
+        elif node.arity == 1:
+            child_expr = self.toInfix(node.child)
+            return f"{node.value}{child_expr}"
+
+        elif node.arity == 2:
+            left_expr = self.toInfix(node.left)
+            right_expr = self.toInfix(node.right)
+            return f"{left_expr}{node.value}{right_expr}"
+
+        else:
+            raise ValueError(f"Unsupported arity: {node.arity}")
+        
 
 
-if __name__=="__main__":
-    tempTree = AbstractSyntaxTree()
-    formula = "#x<y=>#x<#y"
-    tempTree.buildTree(formula)
-    tempTree.printTree()
+# if __name__=="__main__":
+#     tempTree = AbstractSyntaxTree()
+#     formula = "#x<y=>#x<#y"
+#     tempTree.buildTree(formula)
+#     tempTree.printTree()
+#     tempTree.clearNode(tempTree.root)
+#     tempTree.printTree()
+    

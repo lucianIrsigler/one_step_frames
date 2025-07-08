@@ -16,7 +16,6 @@ class TestShunt(unittest.TestCase):
             ("w<#x=>w<#i*(#x)", "w x # < w x # i* # < =>"),
             ("@'w<x=>w<#i*(#x)", "w @' x < w x # i* # < =>"),
             ("w<#i*(#@'w)", "w w @' # i* # <"),
-                   # Additional tests:
             ("i!i(y)", "y i i!"),                    # nested unary operators i! applied twice
             ("~#x&y", "x # ~ y &"),                   # unary ~ with binary &
             ("x=>y|z", "x y z | =>"),                  # implication and disjunction
@@ -30,7 +29,7 @@ class TestShunt(unittest.TestCase):
         ]
 
         for formula, expected_postfix in tests:
-            print(formula)
+            # print(formula)
             reverted = shuntingYard(formula)
             self.assertEqual(reverted, expected_postfix)
 
@@ -100,6 +99,40 @@ class TestAbstractSyntaxTree(unittest.TestCase):
     def test_invalid_expression_extra_operands(self):
         with self.assertRaises(ASTError):
             self.ast.buildTree("x y")
+
+    
+    def test_clear_tree(self):
+
+        formula = "#x<y=>#x<#y"
+        self.ast.buildTree(formula)
+
+        # Ensure the root is set before clearing
+        self.assertIsNotNone(self.ast.getRoot())
+        self.ast.clearTree()
+
+        # After clearing, root should be None
+        self.assertIsNone(self.ast.getRoot())
+        self.assertEqual(self.ast.nodes, [])
+        self.assertEqual(self.ast.variables, [])
+        self.assertEqual(self.ast.constants, [])
+
+    def test_clear_node(self):
+        formula = "#x<y"
+        root = self.ast.buildTree(formula)
+
+        # Ensure tree is built properly
+        self.assertEqual(root.value, "<")
+        self.assertIsNotNone(root.left)
+        self.assertIsNotNone(root.right)
+
+        # Clear node manually
+        self.ast.clearNode(root)
+
+        # Root still exists, but its internals should be cleared
+        self.assertIsNone(root.left)
+        self.assertIsNone(root.right)
+        self.assertIsNone(root.value)  # value is set to None in clearNode
+
 
 if __name__ == "__main__":
     unittest.main()
