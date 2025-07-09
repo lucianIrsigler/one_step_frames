@@ -3,3 +3,4 @@ venv/
 tools/*
 tools/
 __pycache__/
+.vscode/

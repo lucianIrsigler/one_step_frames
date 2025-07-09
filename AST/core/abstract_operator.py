@@ -12,6 +12,7 @@ class AbstractOperator:
         setArity(arity: int) -> None: Sets the arity of the operator
         setSymbol(symbol: str) -> None: Sets the symbol of the operator.
     """
+    
     def __init__(self,symbol,arity,preference=0) -> None:
         self.symbol = symbol
         self.arity = arity

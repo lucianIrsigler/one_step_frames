@@ -1,3 +1,6 @@
+import re
+
+
 class Nominal:
     def __init__(self):
         self.nominal_dict = {
@@ -18,3 +21,7 @@ class Nominal:
 
     def __str__(self):
         return f"Nominal(nominal_dict={self.nominal_dict})"
+
+
+def checkNominal(string:str):
+    return bool(re.fullmatch(r"^[uvw]_\d+$",string))

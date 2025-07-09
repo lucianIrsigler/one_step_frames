@@ -1,7 +1,10 @@
 import unittest
-from util.preprocess import checkIfNoTextAfterCharacter, checkIfNoTextBeforeCharacter, checkIfValidCharacters
-from util.errors import InputError
-import util.formula as formula_util
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).parent.parent))
+from core.preprocess import checkIfNoTextAfterCharacter, checkIfNoTextBeforeCharacter, checkIfValidCharacters
+from errors.errors import InputError
+import core.formula as formula_util
 
 
 class TestPreprocess(unittest.TestCase):
@@ -37,7 +40,7 @@ class TestFormula(unittest.TestCase):
         self.assertEqual(formula_util.initAtomicFormula("#x"), "#x")
         self.assertEqual(formula_util.initAtomicFormula("@x"), "@x")
 
-    def test_initFormula(self):
+    def test_initFrmula(self):
         self.assertEqual(formula_util.initFormula("x"), "i(x)")
         self.assertEqual(formula_util.initFormula("#x"), "#x")
         self.assertEqual(formula_util.initFormula("@x"), "@x")

@@ -1,10 +1,6 @@
-__all__ = ["findAtomicFormulas", "getConnectives", "checkIfFree", "initAtomicFormula", "initSubformula"]
-
 import re
-import sys
-from pathlib import Path
-sys.path.append(str(Path(__file__).parent.parent))
-from AST.abstract_syntax_tree import AbstractSyntaxTree,Node
+from AST.core.abstract_syntax_tree import AbstractSyntaxTree
+from AST.core.ast_util import getLeafNodes,toInfix
 
 modalOperators = ["#","@","#'","@'"]
 #TODO add <-> if needed
@@ -117,27 +113,6 @@ def initAtomicFormula(formula:str)->str:
         return formula
 
 
-def getLeafNodes(node:Node,parent=None,result=None):
-    if result is None:
-        result = []
-
-    if node is None:
-        return result
-    
-    if node.arity==2:
-        if (node.left!=None):
-            getLeafNodes(node.left,node,result)
-        if (node.right!=None):
-            getLeafNodes(node.right,node,result)
-    else:
-        if node.child!=None:
-            getLeafNodes(node.child,node,result)
-        else:
-            result.append((node,parent))
-
-    return result
-
-
 def initFormula(subformula:str)->str:
     subformula = subformula.replace("/","=>")
     subformula = subformula.replace("->","<")
@@ -157,10 +132,4 @@ def initFormula(subformula:str)->str:
             res = initAtomicFormula(childValue)
             i[0].value = res
 
-    return ast.toInfix()
-
-
-# if __name__=="__main__":
-#     rule = "x"
-#     output = initFormula(rule)
-#     print(output)
+    return toInfix(ast.root)

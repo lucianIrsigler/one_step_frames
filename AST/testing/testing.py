@@ -1,8 +1,7 @@
-# add tests for stepFrameConditions.py
 import unittest
-from AST.shunting_yard import shuntingYard,replaceCharacters
-from AST.abstract_syntax_tree import AbstractSyntaxTree
-from AST.AST_error import ASTError
+from AST.parser.shunting_yard import shuntingYard
+from AST.core.abstract_syntax_tree import AbstractSyntaxTree
+from AST.errors.ast_error import ASTError
 
 
 class TestShunt(unittest.TestCase):

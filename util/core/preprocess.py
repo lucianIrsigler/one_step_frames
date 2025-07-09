@@ -1,4 +1,4 @@
-from util.errors import InputError
+from util.errors.errors import InputError
 
 # List of valid characters
 validCharacters = ["#","@","->","<->","#'","@'","&",
