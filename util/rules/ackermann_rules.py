@@ -170,6 +170,7 @@ def applyAckermannRule(formula:str)->str:
         Ackermann rule cannot be applied.
     """
     varaibles = findVariables(formula)
+    
     for var in varaibles:
         ackermannApplicable = checkAckermannConditions(formula,var)
         canApply = ackermannApplicable[0]

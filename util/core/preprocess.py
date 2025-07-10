@@ -1,8 +1,36 @@
 from util.errors.errors import InputError
 
+def parseRule(rule:str)->str:
+    """Parses a rule to ensure it has a valid format
+
+    Args:
+        rule (str): Rule to parse
+
+    Raises:
+        InputError: Can't find /
+    Returns:
+        str: Validated rule string
+    """
+
+    if (rule.find("/")==-1):
+        raise InputError("Can't find /")
+
+    arguements = rule.split("/")
+    arguements = [i.strip() for i in arguements]
+
+    if (arguements[0]==""):
+        rule = arguements[1]
+    elif (arguements[1]==""):
+        # Don't think this really makes sense, because then you dont have a conclusion
+        rule = arguements[0]
+
+    return rule
+
+
 # List of valid characters
 validCharacters = ["#","@","->","<->","#'","@'","&",
                    "|","~","0","1","/","<=","&'","=>",",","<'"]
+
 
 def checkIfNoTextAfterCharacter(string:str,character:str)->bool:
     """Checks if there is text after a certain character in a string
@@ -101,3 +129,4 @@ def preprocess(rule:str)->bool:
         return False
 
     return True
+
