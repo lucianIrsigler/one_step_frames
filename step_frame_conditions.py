@@ -1,38 +1,24 @@
-from util.formula import initFormula
-from util.nomial import Nominal
-from AST.abstract_syntax_tree import AbstractSyntaxTree
-from util.errors import InputError
+from util.core.preprocess import parseRule
+from util.core.formula import initFormula
+from util.core.solution_search import greedyFirstSearch
 
-nominalTracker = Nominal()
-
-def parseRule(rule:str):
-    if (rule.find("/")==-1):
-        raise InputError("Can't find /")
-
-    arguements = rule.split("/")
-    arguements = [i.strip() for i in arguements]
-
-    if (arguements[0]==""):
-        rule = arguements[1]
-    else:
-        # Don't think this really makes sense, because then you dont have a conclusion
-        rule = arguements[0]
-
-    return rule
 
 def findStepFrameCondition(rule:str):
+    rule = parseRule(rule)
     formula = initFormula(rule)
-    return formula
+    result = greedyFirstSearch(formula)
+    return result
+
 
 if __name__=="__main__":
-    rule = "/#x->x"
-    rule = parseRule(rule)
-    formula = findStepFrameCondition(rule)
-    print(formula)
+    # rule = "#x->y/#x->#y"
+    # rule = "/#x->x"
 
-    # tree = AbstractSyntaxTree()
-    # tree.buildTree(formula)
-    # #Can start cooking inference rules now
-    # if (tree.root.left.value=="<"):
-    #     print(tree.toInfix(tree.root.left))
+    rule = input("Enter formula:")
+    res = findStepFrameCondition(rule)
 
+    for i in res[0]:
+        print(i)
+    print()
+    for i in res[1]:
+        print(i)
