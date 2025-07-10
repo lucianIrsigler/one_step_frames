@@ -12,7 +12,7 @@ class AdjunctionRules:
     def rule_1(phi: str, psi: str) -> Optional[str]:
         """Rule A1: If psi matches #.*, return @'{phi}<{psi}"""
         if re.fullmatch(r"^#.*$", psi):
-            return f"@'{phi}<{psi}"
+            return f"@'{phi}<{psi.replace("#","",1)}"
         return None
     
     @staticmethod

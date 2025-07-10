@@ -22,7 +22,7 @@ def processFormulaWithAST(formula: str) -> list[str]:
     return infixStrings
 
 
-def inferenceRules(formula:str)->list[str]:
+def inferenceRules(formula:str)->dict[str,list[str]]:
     formulae = processFormulaWithAST(formula)
     inferenceEngignes = [NominalInference(),AdjunctionInference()]
     resultDict = {i:[] for i in formulae}
@@ -32,8 +32,7 @@ def inferenceRules(formula:str)->list[str]:
             availableInferenceRules = engine.get_inferences(form)
             resultDict[form].extend(availableInferenceRules)
     
-    print(resultDict)
-    return [""]
+    return resultDict
 
 
 if __name__=="__main__":
