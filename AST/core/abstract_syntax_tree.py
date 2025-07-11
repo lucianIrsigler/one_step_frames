@@ -2,7 +2,7 @@ from AST.parser.shunting_yard import shuntingYard
 from AST.core.abstract_operator import AbstractOperator
 from AST.errors.ast_error import ASTError
 
-
+# Default operators for the Abstract Syntax Tree
 defaultOperators = operators = [
     # perf 2
     AbstractOperator("=>",2,2),
@@ -30,12 +30,15 @@ defaultOperators = operators = [
 
 class Node:
     def __init__(self, arity, value) -> None:
-        self.arity = arity  # Fix: use the parameter instead of hardcoding 2
+        self.arity = arity 
         self.value = value
+        # Initialize children based on arity
         if (arity == 2):
+            # Binary operator - has left and right children
             self.left = None
             self.right = None
         else:
+            # Unary operator or operand - has one child
             self.child = None
     
     def setLeft(self, leftNode):
@@ -52,6 +55,9 @@ class Node:
 
 
 class AbstractSyntaxTree:
+    """Represents an Abstract Syntax Tree (AST) for modal logic formulas.
+    This class provides methods to build the tree from a formula string,
+    clear the tree, print the tree structure, and find operators."""
     def __init__(self, operators: list[AbstractOperator]=defaultOperators) -> None:
         self.root = None
         self.nodes = []
@@ -72,7 +78,23 @@ class AbstractSyntaxTree:
     
 
     def buildTree(self, formula: str):
-        """Build the AST from a formula string"""
+        """Builds an Abstract Syntax Tree from a given formula string.
+        This method uses the shunting yard algorithm to convert the formula
+        into postfix notation, then constructs the tree using a stack-based approach.
+
+        Args:
+            formula (str): The formula string to build the tree from.
+
+        Raises:
+            ASTError: If the formula is empty or if there are not enough operands for an operator.
+            ASTError: If the postfix notation is invalid or if there are too many operands left in the stack after processing.
+            ASTError: If an unsupported operator arity is encountered.
+            ASTError: If there are not enough operands for a unary or binary operator.
+            ASTError: If the postfix notation is empty after processing.
+
+        Returns:
+            Node: The root node of the constructed Abstract Syntax Tree.
+        """
         postfixNotation = shuntingYard(formula).split()
 
         if not postfixNotation:
@@ -118,6 +140,13 @@ class AbstractSyntaxTree:
     
 
     def clearNode(self,node: Node):
+        """Recursively clear a node and its children to help with deallocation.
+        This method sets the children of the node to None and clears the value.
+        It is useful for deallocating memory when the tree is no longer needed.
+
+        Args:
+            node (Node): The node to clear.
+        """
         if node is None:
             return
         if node.arity == 1:
@@ -136,7 +165,9 @@ class AbstractSyntaxTree:
 
 
     def clearTree(self):
-        """Clear all nodes in the tree to help with deallocation."""
+        """Clear the entire tree by deallocating nodes and resetting the root.
+        This method recursively clears all nodes in the tree and resets the root to None.
+        It also clears any lists tracking nodes, variables, and constants."""
         if (self.root!=None):
             self.clearNode(self.root)
 
@@ -147,7 +178,12 @@ class AbstractSyntaxTree:
 
 
     def printTree(self):
-        """Print the tree structure in a readable format"""
+        """Print the Abstract Syntax Tree in a structured format.
+        This method prints the tree structure starting from the root node.
+        It uses a helper method to recursively print each node with its value and arity.
+        If the tree is empty, it prints a message indicating that the tree is empty.
+        The output is formatted to visually represent the tree structure with connectors.
+        """
         if self.root is None:
             print("Empty tree")
             return

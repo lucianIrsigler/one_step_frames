@@ -1,5 +1,6 @@
 import re
 
+# Encodes the operators to a 1 character representation
 operator_map = {
     "<->": "=",
     "=>": ">",
@@ -19,18 +20,21 @@ operator_map = {
     "&": "&"
 }
 
+# Maps operators to their associativity and precedence
+# Associativity: "L" for left associative, "R" for right associative
+# Precedence: Higher number means higher precedence
 associativity_map = {
-    ">": "R",   # => and -> both mapped to >
-    "=": "L",   # <-> mapped to =
+    ">": "R",   
+    "=": "L",   
     "<": "L",
-    "[": "L",   # <' mapped to [
+    "[": "L",   
     "#": "R",
-    "$": "R",   # #' mapped to $
+    "$": "R",   
     "@": "R",
-    "%": "R",   # @' mapped to %
+    "%": "R",   
     "~": "R",
-    "*": "R",   # i* mapped to *
-    "!": "R",   # i! mapped to !
+    "*": "R",  
+    "!": "R",   
     "i": "R",
     "^": "R",
     "|": "L",
@@ -39,12 +43,12 @@ associativity_map = {
 }
 
 precedence_map = {
-    ">": 1,    # => and -> both mapped to >
-    "=": 1,    # <-> mapped to =
+    ">": 1,    
+    "=": 1,    
     "|": 2,
     "&": 2,
     "<": 3,
-    "[": 3,    # <' mapped to [
+    "[": 3, 
     "^": 4,
     "]": 4,
     "#": 6,
@@ -66,6 +70,16 @@ regexPatterns={
 
 
 def replaceCharacters(formula: str, reverse: bool = False) -> str:
+    """Replace/Encode operators in a formula with their single-character representations 
+    or revert them back.
+
+    Args:
+        formula (str): The formula to process, which may contain operators and operands.
+        reverse (bool, optional): True=>Decodes the string, while False encodes it. Defaults to False.
+
+    Returns:
+        str: The processed formula with operators replaced by single characters or reverted back.
+    """
     if not reverse:
         for i, j in operator_map.items():
             formula = formula.replace(i, j)
@@ -93,8 +107,20 @@ def replaceCharacters(formula: str, reverse: bool = False) -> str:
     return formula
 
 
-def tokenize(formula):
-    #TODO make like list from the dict directly
+def tokenize(formula:str)-> list:
+    """Tokenizes a formula into operators and operands.
+
+    Args:
+        formula (str): The formula to tokenize, which may contain operators and operands.
+
+    Raises:
+        RuntimeError: If an unexpected character is found in the formula or if there are unmatched parentheses.
+        RuntimeError: If there are unexpected characters at the end of the input.
+
+    Returns:
+        list: A list of tokens extracted from the formula, 
+        where each token is either an operator or an operand.
+    """
     token_specification = [
         ("OPERATOR", regexPatterns["OPERATOR"]),  # i operator alone first
         ("OPERAND",  regexPatterns["OPERAND"]),                  # operands single letter excluding 'i'
@@ -124,14 +150,42 @@ def tokenize(formula):
 
 
 def checkOperand(token: str) -> bool:
+    """Check if a token is a valid operand.
+
+    Args:
+        token (str): The token to check.
+
+    Returns:
+        bool: True if the token is a valid operand, otherwise False.
+    """
     return bool(re.fullmatch(regexPatterns["OPERAND"], token))
 
 
 def checkOperator(token: str) -> bool:
+    """Check if a token is a valid operator.
+
+    Args:
+        token (str): The token to check.
+
+    Returns:
+        bool: True if the token is a valid operator, otherwise False.
+    """
     return bool(re.fullmatch(regexPatterns["OPERATOR"], token))
 
 
 def shuntingYardAlgorithm(formula: str) -> str:
+    """Main function to convert an infix formula to postfix notation using 
+    the Shunting Yard algorithm.
+
+    Args:
+        formula (str): The infix formula to convert, which may contain operators and operands.
+
+    Raises:
+        RuntimeError: If an unknown token is encountered in the formula.
+
+    Returns:
+        str: The postfix notation of the input formula, where operators follow their operands.
+    """
     output = ""
     operatorStack = []
     tokens = tokenize(formula)
@@ -178,8 +232,24 @@ def shuntingYardAlgorithm(formula: str) -> str:
     
     return output.strip()
 
-def postfix_to_infix(postfix_expr: str) -> str:
-    """Convert postfix expression back to infix notation"""
+
+def postfixToInfix(postfix_expr: str) -> str:
+    """Convert a postfix expression to infix notation.
+    This function takes a postfix expression as input and converts it to infix notation.
+
+    Args:
+        postfix_expr (str): The postfix expression to convert, which may contain operators and operands.
+
+    Raises:
+        RuntimeError: Not enough operands for unary operator: {token}
+        RuntimeError: Not enough operands for operator: {token}
+        RuntimeError: Unknown token in postfix: {token}
+        RuntimeError: Invalid postfix expression: {postfix_expr}
+
+    Returns:
+        str: The infix notation of the input postfix expression, where operators are 
+        placed between their operands.
+    """
     tokens = postfix_expr.split()
     stack = []
     
@@ -213,6 +283,16 @@ def postfix_to_infix(postfix_expr: str) -> str:
 
 
 def shuntingYard(formula:str):
+    """Convert an infix formula to postfix notation using the Shunting Yard algorithm.
+    This function takes a formula as input, replaces the operators with their single-character 
+    representations,and then applies the Shunting Yard algorithm to convert it to postfix notation.
+
+    Args:
+        formula (str): The infix formula to convert, which may contain operators and operands.
+
+    Returns:
+        _type_: str: The postfix notation of the input formula, where operators follow their operands.
+    """
     inputFormula = replaceCharacters(formula)
     postfix = shuntingYardAlgorithm(inputFormula)
     reverted = replaceCharacters(postfix, True)

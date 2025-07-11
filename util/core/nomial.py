@@ -2,6 +2,7 @@ import re
 
 
 class Nominal:
+    """A class to manage nominals for modal logic."""
     def __init__(self):
         self.nominal_dict = {
             "w": {},

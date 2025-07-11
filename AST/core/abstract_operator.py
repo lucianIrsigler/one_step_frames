@@ -18,9 +18,11 @@ class AbstractOperator:
         self.arity = arity
         self.preference = preference 
 
+
     def getPreference(self) -> int:
         return self.preference
     
+
     def setPreference(self, preference: int) -> None:
         self.preference = preference
 
@@ -32,6 +34,7 @@ class AbstractOperator:
     def setArity(self,arity:int) -> None:
         self.arity = arity
     
+
     def getSymbol(self) -> str:
         return self.symbol
     

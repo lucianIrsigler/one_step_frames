@@ -3,7 +3,17 @@ from util.rules.inference_rules import inferenceRules
 import util.rules.ackermann_rules as Ackermann
 
 
-def greedyFirstSearch(formula:str):
+def greedyFirstSearch(formula: str) -> tuple[list[str], list[str]]:
+    """Perform a greedy first search on the formula to find a solution.
+    A Priority stack is used with the ackermann heuristic 
+    to prioritize items.
+
+    Args:
+        formula (str): The formula to search on.
+        
+    Returns:
+        list[list[str]]: A list, index 0 is states, and index 1 is the log of the search.
+    """
     variables = Ackermann.findVariables(formula)
     numberVariables = len(variables) 
     stillSearch = True

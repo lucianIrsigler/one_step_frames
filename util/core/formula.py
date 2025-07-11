@@ -57,6 +57,7 @@ def getConnectives(formula:str,additionalConnectives:list[str]=[])->list[str]:
 
 
 def getVariable(formula:str)->list[str]:
+    """Given some formula, it returns all the propositional variables"""
     outputList = []
     for i in formula:
         if i.isalpha() and i!="i" and i not in modalOperators:
@@ -114,11 +115,27 @@ def initAtomicFormula(formula:str)->str:
 
 
 def initFormula(subformula:str)->str:
+    """Initializes a formula by doing the following:
+    1. Replacing '/' with '=>'
+    2. Replacing '->' with '<'
+    3. Building an abstract syntax tree from the formula
+    4. Replacing all leaf nodes with parents that arent modal operators
+    with an initialized atomic formula(putting morphism i() around it)
+
+    Args:
+        subformula (str): subformula to initialize
+
+    Returns:
+        str: initialized formula
+    """
     subformula = subformula.replace("/","=>")
     subformula = subformula.replace("->","<")
     ast = AbstractSyntaxTree()
     ast.buildTree(subformula)
     # Get leaf nodes and their parents
+    if (ast.root is None):
+        return subformula
+    
     leafAndParents = getLeafNodes(ast.root,None,[])
     for i in leafAndParents:
         if i[1]==None:
