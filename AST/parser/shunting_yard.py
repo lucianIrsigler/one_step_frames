@@ -1,5 +1,7 @@
 import re
+from AST.parser.nominal import Nominal
 
+nominalManager = Nominal()
 # Encodes the operators to a 1 character representation
 operator_map = {
     "<->": "=",
@@ -81,12 +83,24 @@ def replaceCharacters(formula: str, reverse: bool = False) -> str:
         str: The processed formula with operators replaced by single characters or reverted back.
     """
     if not reverse:
+        nominalManager.createMapping(formula)
+        mapping = nominalManager.getMapping()
+
+        for k,v in mapping.items():
+            formula = formula.replace(k,v)
+
         for i, j in operator_map.items():
             formula = formula.replace(i, j)
 
         formula = formula.replace("(", "")
         formula = formula.replace(")", "")
     else:
+        mapping = nominalManager.getMapping()
+        reverseNominalMap = {v:k for k,v in mapping.items()}
+        
+        for i,j in reverseNominalMap.items():
+            formula = formula.replace(i,j)
+
         reverse_operator_map = {v: k for k, v in operator_map.items()}
         for i, j in reverse_operator_map.items():
             formula = formula.replace(i, j)
@@ -293,6 +307,7 @@ def shuntingYard(formula:str):
     Returns:
         _type_: str: The postfix notation of the input formula, where operators follow their operands.
     """
+    nominalManager.reset()
     inputFormula = replaceCharacters(formula)
     postfix = shuntingYardAlgorithm(inputFormula)
     reverted = replaceCharacters(postfix, True)
