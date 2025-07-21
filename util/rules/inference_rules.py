@@ -51,10 +51,13 @@ def inferenceRules(formula:str)->dict[str,list[str]]:
     formulae = processFormulaWithAST(formula)
     inferenceEngignes = [NominalInference(),AdjunctionInference()]
     resultDict = {i:[] for i in formulae}
+    trackRules = []
 
     for engine in inferenceEngignes:
         for form in resultDict.keys():
             availableInferenceRules = engine.get_inferences(form)
+            availableRules = engine.get_applicable_rules(form)
+            trackRules.extend(availableRules)
             resultDict[form].extend(availableInferenceRules)
     
     return resultDict

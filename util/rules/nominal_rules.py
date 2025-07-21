@@ -4,6 +4,7 @@ from AST.core.ast_util import getSpecificNodes, toInfix
 from util.core.nomial import checkNominal
 from util.errors.errors import InferenceError
 from typing import List, Optional, Union
+from util.core.nomial import getNominals
 
 
 class NominalRules:
@@ -14,7 +15,9 @@ class NominalRules:
         """Rule N1: General implication rule"""
         # As long as < is here, it should be doable
         # TODO nominal it up
-        return f"u<{phi}=>u<{psi}"
+        nominals_w = set(getNominals(phi)).union(set(getNominals(psi)))
+        u = f"w_{len(nominals_w)}"
+        return f"{u}<{phi}=>{u}<{psi}"
     
     @staticmethod
     def rule_2(phi: str, psi: str) -> Optional[str]:
@@ -42,24 +45,24 @@ class NominalRules:
         return f"u<{psi_args[0]}", f"u<{psi_args[1]}"
     
     @staticmethod
-    def rule_4_1(phi: str, psi: str) -> Optional[str]:
-        """Rule N4_1: Negation rule with ~ operator"""
+    def rule_4(phi: str, psi: str) -> Optional[str]:
+        """Rule N4: Negation rule with ~ operator"""
         if "~" not in psi or not checkNominal(phi) or not re.fullmatch(r"^~.*$", psi):
             return None
         
         return f"{phi}<'{psi}"
     
     @staticmethod
-    def rule_4_2(phi: str, psi: str) -> Optional[str]:
-        """Rule N4_2: Negation rule with <' operator"""
+    def rule_5(phi: str, psi: str) -> Optional[str]:
+        """Rule N5: Negation rule with <' operator"""
         if "<'" not in psi or not checkNominal(phi):
             return None
         
         return f"{psi}<~{phi}"
     
     @staticmethod
-    def rule_5(phi: str, psi: str) -> Optional[str]:
-        """Rule N5: @ operator rule"""
+    def rule_6(phi: str, psi: str) -> Optional[str]:
+        """Rule N6: @ operator rule"""
         if not checkNominal(phi) or "@" not in psi or not re.fullmatch(r"^@.*$", psi):
             return None
         
@@ -67,8 +70,8 @@ class NominalRules:
         return f"{phi}<@v&v<{psi}"
     
     @staticmethod
-    def rule_6(phi: str, psi: str) -> Optional[str]:
-        """Rule N6: @' operator rule"""
+    def rule_7(phi: str, psi: str) -> Optional[str]:
+        """Rule N7: @' operator rule"""
         if not checkNominal(phi) or "@'" not in psi or not re.fullmatch(r"^~@.*$", psi):
             return None
         
@@ -76,8 +79,8 @@ class NominalRules:
         return f"{phi}<@'w&w<{psi}"
     
     @staticmethod
-    def rule_7_1(phi: str, psi: str) -> Optional[str]:
-        """Rule N7_1: Truth value rule for 1"""
+    def rule_8(phi: str, psi: str) -> Optional[str]:
+        """Rule N8: Truth value rule for 1"""
         if not checkNominal(phi) or psi.strip() != "1":
             return None
         
@@ -85,8 +88,8 @@ class NominalRules:
         return "T"
     
     @staticmethod
-    def rule_7_2(phi: str, psi: str) -> Optional[str]:
-        """Rule N7_2: Truth value rule for 0"""
+    def rule_9(phi: str, psi: str) -> Optional[str]:
+        """Rule N9: Truth value rule for 0"""
         if not checkNominal(phi) or psi.strip() != "0":
             return None
         
@@ -94,16 +97,16 @@ class NominalRules:
         return "F"
     
     @staticmethod
-    def rule_8(phi: str, psi: str) -> Optional[str]:
-        """Rule N8: Equality rule"""
+    def rule_10(phi: str, psi: str) -> Optional[str]:
+        """Rule N10: Equality rule"""
         if not checkNominal(phi) or not checkNominal(psi):
             return None
         
         return f"{phi}={psi}"
     
     @staticmethod
-    def rule_9(phi: str, psi: str) -> Optional[str]:
-        """Rule N9: i* operator rule"""
+    def rule_11(phi: str, psi: str) -> Optional[str]:
+        """Rule N11: i* operator rule"""
         if not checkNominal(phi) or not re.fullmatch(r"^i\*\([^\)]*\)$", psi):
             return None
         
@@ -149,11 +152,22 @@ class NominalInference:
         
         return valid_inferences
     
+    def _get_applicable_rules(self, phi: str, psi: str) -> List[str]:
+        """Gets all nominal rules avaiable with current values."""
+        valid_rules = []
+        
+        for i, rule in enumerate(self.rules, 1):
+            result = rule(phi, psi)
+            if result is not None:
+                valid_rules.append(f"N{i}")
+        
+        return valid_rules
+    
     def get_inferences(self, formula: str) -> List[str]:
         """Get all valid nominal inferences for a formula."""
         phi, psi = self.parse_formula(formula)
         return self.apply_rules(phi, psi)
-
+    
 
 def process_formula_with_ast(formula: str) -> List[str]:
     """Process formula using AST and return nominal inferences."""

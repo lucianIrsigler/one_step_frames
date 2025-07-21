@@ -25,4 +25,9 @@ class Nominal:
 
 
 def checkNominal(string:str):
-    return bool(re.fullmatch(r"^[uvw]_\d+$",string))
+    return bool(re.fullmatch(r"\b[uwv](?:_\d+)?\b",string))
+
+
+def getNominals(string:str):
+    matches = re.findall(r"\b[uwv](?:_\d+)?\b", string)
+    return matches

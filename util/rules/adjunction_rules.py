@@ -64,6 +64,18 @@ class AdjunctionInference:
         
         return parts[0], parts[1]
     
+    def _get_applicable_rules(self, phi: str, psi: str) -> List[str]:
+        """Gets all adjunction rules avaiable with current values."""
+        valid_rules = []
+        
+        for i, rule in enumerate(self.rules, 1):
+            result = rule(phi, psi)
+            if result is not None:
+                valid_rules.append(f"A{i}")
+        
+        return valid_rules
+    
+
     def apply_rules(self, phi: str, psi: str) -> List[str]:
         """Apply all adjunction rules and return valid inferences."""
         valid_inferences = []
