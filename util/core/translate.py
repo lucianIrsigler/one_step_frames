@@ -1,11 +1,14 @@
-from nomial import Nominal,getNominals
-from translate_util import checkOperand,replaceNominals,replaceCharacters,cleanUp
+from util.core.nomial import Nominal,getNominals
+from util.core.translate_util import replaceNominals,cleanUp
+from util.core.text_functions import checkOperand,replaceCharacters
+
 
 nominalManager = Nominal()
 
 symbolTranslations={
-    #Modal operators
+    # F is for all, E is for exists, R is for relation, f is for function
     # x is old, y is new, z is the rest of form
+
     "#":"F(y)(R(x,y)[z)",
     "$":"F(y)(R(y,x)[z)",
 
@@ -23,6 +26,21 @@ lastVariable = ""
 
 #Take it like this, if #xy, then put symbol as "#", and "xy" as formula
 def translateSymbol(symbol:str,formula:str)->str:
+    """Translate a symbol into its corresponding translation based on the symbolTranslations dictionary.
+    If the symbol is an operand, it will use the "u" translation. If the symbol is not found 
+    in the dictionary, it will raise a KeyError. 
+
+
+    Args:
+        symbol (str): symbol to translate
+        formula (str): the rest of the formula after the symbol
+
+    Raises:
+        KeyError: If the symbol is not found in the symbolTranslations dictionary and is not an operand.
+
+    Returns:
+        str: The translated symbol, which may include variables and the rest of the formula.
+    """
     global lastVariable
 
     if symbol not in symbolTranslations.keys() and not checkOperand(symbol):
@@ -69,6 +87,18 @@ def translateSymbol(symbol:str,formula:str)->str:
 
 
 def translateCondition(formula:str)->str:
+    """Translate a formula into a one-step condition by replacing nominals and 
+    characters with their corresponding translations. It works by iterating through the
+    formula, translating each symbol, and building a base translation. It also handles
+    nested translations by storing them in a dictionary and replacing them in the base translation.
+
+    Args:
+        formula (str): The formula to translate, which may contain nominals and characters.
+
+    Returns:
+        str: The translated formula as a one-step condition, with nominals and 
+        characters replaced by their translations.
+    """
     formula = replaceNominals(formula)
     formula = replaceCharacters(formula)
 
@@ -98,9 +128,9 @@ def translateCondition(formula:str)->str:
     return base
 
 
-if __name__ == "__main__":
-    formula = "w_0<#*#@'w_0"
-    # formula = "w_0<i@'w_0"
-    # formula = "w_0<#@'i@'w_0"
-    res = translateCondition(formula)
-    print(res)
+# if __name__ == "__main__":
+#     formula = "w_0<#*#@'w_0"
+#     # formula = "w_0<i@'w_0"
+#     # formula = "w_0<#@'i@'w_0"
+#     res = translateCondition(formula)
+#     print(res)

@@ -1,4 +1,4 @@
-import re
+from util.core.text_functions import replaceCharacters
 
 # Make the dynamic mapping
 def get_letter(index):
@@ -37,59 +37,6 @@ def generateMapping():
         nominalToSymbol[f"u_{i}"] = get_letter(i + 18)
 
     return nominalToSymbol
-
-
-# Operator/operand functonality
-operator_map = {
-    "<->": "+",
-    "=>": ">",
-    "->": "[",
-    "<": "<",
-    "<'": "]",
-    "#'": "$",
-    "#": "#",
-    "@'": "%",
-    "@": "@",
-    "~": "~",
-    "i*": "*",
-    "i!": "!",
-    "i": "i",
-    "^": "^",
-    "|": "|",
-    "&": "&"
-}
-
-
-def checkOperand(token:str)->bool:
-    return bool(re.fullmatch(r"[a-hj-zA-HJ-Z]", token))
-
-
-# Text replacement
-def replaceCharacters(formula: str,reverse:bool=False) -> str:
-    if not reverse:
-        for i, j in operator_map.items():
-            formula = formula.replace(i, j)
-    else:
-        reverse_operator_map = {v: k for k, v in operator_map.items()}
-        for i, j in reverse_operator_map.items():
-            formula = formula.replace(i, j)
-
-        unary_ops = ["i*", "i!", "i"]
-        unary_syms = [operator_map[op] for op in unary_ops]
-
-        prev = None
-        while formula != prev:
-            prev = formula
-            # Add parentheses around non-parenthesized operand
-            formula = re.sub(
-                rf"({'|'.join(map(re.escape, unary_syms))})(?!\s*\()([a-zA-Z][a-zA-Z0-9_]*)",
-                r"\1(\2)",
-                formula
-            )
-    # formula = formula.replace("(", "")
-    # formula = formula.replace(")", "")
-
-    return formula
 
 
 def replaceNominals(formula:str,nominalToSymbol:dict=generateMapping(),reverse:bool=False):

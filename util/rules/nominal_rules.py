@@ -163,6 +163,10 @@ class NominalInference:
         
         return valid_rules
     
+    def get_applicable_rules(self,formula:str)->List[str]:
+        phi, psi = self.parse_formula(formula)
+        return self._get_applicable_rules(phi, psi)
+    
     def get_inferences(self, formula: str) -> List[str]:
         """Get all valid nominal inferences for a formula."""
         phi, psi = self.parse_formula(formula)
