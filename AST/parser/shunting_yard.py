@@ -2,9 +2,10 @@ import re
 from AST.parser.nominal import Nominal
 
 nominalManager = Nominal()
+
 # Encodes the operators to a 1 character representation
 operator_map = {
-    "<->": "=",
+    "<->": "+",
     "=>": ">",
     "->": "[",
     "<": "<",
