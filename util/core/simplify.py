@@ -1,7 +1,7 @@
 import re
 from util.core.nomial import checkNominal,getNominals
 from util.core.text_functions import replaceCharactersNoParen,checkOperator
-
+from typing import Tuple
 
 def getEqualities(text:str)->list[str]:
     matches = re.findall(r'\b[uwv]_\d+=\b[uwv]_\d+', text)
@@ -37,7 +37,7 @@ def extractSubsetArguements(text:str)->list[str]:
         b = match.group(2)  # common part
         c = match.group(3)
 
-        output = [a,c]
+        output = [a,c,b]
 
     return output
 
@@ -165,16 +165,19 @@ def removeQuanifiers(condition:str,substitutions:dict)->str:
     return condition
 
 
-def finalSimplifications(condition:str)->str:
+def finalSimplifications(condition:str)->Tuple[str,str]:
     subsets = getSubsetRelationSimplify(condition)
+
+    matchedPart = ""
 
     for subset in subsets:
         subsetArgs = extractSubsetArguements(subset)
         #? is subset symbol
+        matchedPart = subsetArgs[2]
         replaceString = f"R({subsetArgs[0]})?R({subsetArgs[1]})"
         condition = condition.replace(subset,replaceString)
     
-    return condition
+    return condition,matchedPart
 
 
 def simplifyConditon(condition:str)->str:
@@ -200,10 +203,13 @@ def simplifyConditon(condition:str)->str:
         condition = condition.replace(copyOfRel,rel)
     
     condition = removeEqualitiesAndOperator(condition,eqns)
-    condition = removeQuanifiers(condition,substitutions)
-    condition = finalSimplifications(condition)
-    condition = fixParentheses(condition)
 
+    condition = removeQuanifiers(condition,substitutions)
+    condition,matchedPart = finalSimplifications(condition)
+    matchedDict = {v:"" for v in [matchedPart]}
+
+    condition = removeQuanifiers(condition,matchedDict)
+    condition = fixParentheses(condition)
 
     condition = replaceCharactersNoParen(condition,True)
     return condition
