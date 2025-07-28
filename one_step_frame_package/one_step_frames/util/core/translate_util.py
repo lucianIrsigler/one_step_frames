@@ -1,4 +1,4 @@
-from util.core.text_functions import replaceCharacters
+from .text_functions import replaceCharacters
 
 # Make the dynamic mapping
 def get_letter(index):

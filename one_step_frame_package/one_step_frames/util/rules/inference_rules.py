@@ -1,8 +1,8 @@
-from AST.core.abstract_syntax_tree import AbstractSyntaxTree
-from AST.core.ast_util import getSpecificNodes,toInfix
-from util.errors.errors import InferenceError
-from util.rules.nominal_rules import NominalInference
-from util.rules.adjunction_rules import AdjunctionInference
+from ...AST.core.abstract_syntax_tree import AbstractSyntaxTree
+from ...AST.core.ast_util import getSpecificNodes,toInfix
+from ..errors.errors import InferenceError
+from .nominal_rules import NominalInference
+from .adjunction_rules import AdjunctionInference
 
 
 def processFormulaWithAST(formula: str) -> list[str]:

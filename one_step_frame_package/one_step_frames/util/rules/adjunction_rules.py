@@ -1,7 +1,7 @@
 import re
-from util.errors.errors import InferenceError
-from AST.core.abstract_syntax_tree import AbstractSyntaxTree
-from AST.core.ast_util import getSpecificNodes, toInfix
+from ..errors.errors import InferenceError
+from ...AST.core.abstract_syntax_tree import AbstractSyntaxTree
+from ...AST.core.ast_util import getSpecificNodes, toInfix
 from typing import List, Optional, Callable
 
 

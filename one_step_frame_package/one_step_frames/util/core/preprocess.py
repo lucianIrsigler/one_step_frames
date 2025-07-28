@@ -1,4 +1,4 @@
-from util.errors.errors import InputError
+from ..errors.errors import InputError
 
 def parseRule(rule:str)->str:
     """Parses a rule to ensure it has a valid format

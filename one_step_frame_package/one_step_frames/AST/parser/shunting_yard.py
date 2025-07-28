@@ -1,5 +1,5 @@
 import re
-from AST.parser.nominal import Nominal
+from .nominal import Nominal
 
 nominalManager = Nominal()
 

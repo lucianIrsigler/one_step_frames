@@ -1,6 +1,6 @@
-from util.core.priority_stack import PriorityStack
-from util.rules.inference_rules import inferenceRules
-import util.rules.ackermann_rules as Ackermann
+from .priority_stack import PriorityStack
+from ..rules.inference_rules import inferenceRules
+from ..rules.ackermann_rules import findVariables,applyAckermannRule,ackermannHeuristic
 
 
 def greedyFirstSearch(formula: str) -> tuple[list[str], list[str]]:
@@ -14,7 +14,7 @@ def greedyFirstSearch(formula: str) -> tuple[list[str], list[str]]:
     Returns:
         list[list[str]]: A list, index 0 is states, and index 1 is the log of the search.
     """
-    variables = Ackermann.findVariables(formula)
+    variables = findVariables(formula)
     numberVariables = len(variables) 
     stillSearch = True
     iterations = 0
@@ -34,7 +34,7 @@ def greedyFirstSearch(formula: str) -> tuple[list[str], list[str]]:
         if (item==None):
             break
 
-        currentVariables = Ackermann.findVariables(item)
+        currentVariables = findVariables(item)
         appliedAck = False
 
         # Goal test
@@ -45,7 +45,7 @@ def greedyFirstSearch(formula: str) -> tuple[list[str], list[str]]:
         
         #Check ackermann rule
         for var in variables:
-            newForm = Ackermann.applyAckermannRule(item)
+            newForm = applyAckermannRule(item)
 
             if (newForm!= item):
                 trackLog.append(f"Applying Ackermann rule to {item}, yielding {newForm}")
@@ -67,7 +67,7 @@ def greedyFirstSearch(formula: str) -> tuple[list[str], list[str]]:
                 if (tempFormula.count("=>"))>1:
                     continue
 
-                score = Ackermann.ackermannHeuristic(tempFormula,numberVariables)
+                score = ackermannHeuristic(tempFormula,numberVariables)
                 # print(f"ADDED {tempFormula} with prio {score}")
                 trackLog.append(f"Added potential formula {tempFormula} with priority {score}")
                 pq.push(score,tempFormula)

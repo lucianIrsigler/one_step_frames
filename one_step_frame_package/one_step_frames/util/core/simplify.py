@@ -1,6 +1,6 @@
 import re
-from util.core.nomial import checkNominal,getNominals
-from util.core.text_functions import replaceCharactersNoParen,checkOperator
+from ..core.nomial import checkNominal,getNominals
+from ..core.text_functions import replaceCharactersNoParen,checkOperator
 from typing import Tuple
 
 def getEqualities(text:str)->list[str]:

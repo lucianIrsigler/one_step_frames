@@ -1,6 +1,6 @@
-from AST.parser.shunting_yard import shuntingYard
-from AST.core.abstract_operator import AbstractOperator
-from AST.errors.ast_error import ASTError
+from ..parser.shunting_yard import shuntingYard
+from .abstract_operator import AbstractOperator
+from ..errors.ast_error import ASTError
 
 # Default operators for the Abstract Syntax Tree
 defaultOperators = operators = [

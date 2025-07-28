@@ -1,10 +1,10 @@
 import re
-from AST.core.abstract_syntax_tree import AbstractSyntaxTree
-from AST.core.ast_util import getSpecificNodes, toInfix
-from util.core.nomial import checkNominal
-from util.errors.errors import InferenceError
+from ...AST.core.abstract_syntax_tree import AbstractSyntaxTree
+from ...AST.core.ast_util import getSpecificNodes, toInfix
+from ..core.nomial import checkNominal
+from ..errors.errors import InferenceError
+from ..core.nomial import getNominals
 from typing import List, Optional, Union
-from util.core.nomial import getNominals
 
 
 class NominalRules:

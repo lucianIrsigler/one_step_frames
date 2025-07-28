@@ -1,6 +1,6 @@
-from util.core.nomial import Nominal,getNominals
-from util.core.translate_util import replaceNominals,cleanUp
-from util.core.text_functions import checkOperand,replaceCharacters
+from .nomial import Nominal,getNominals
+from .translate_util import replaceNominals,cleanUp
+from .text_functions import checkOperand,replaceCharacters
 
 
 nominalManager = Nominal()

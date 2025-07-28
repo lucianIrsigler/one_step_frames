@@ -1,6 +1,6 @@
 import re
-from AST.core.abstract_syntax_tree import AbstractSyntaxTree
-from AST.core.ast_util import getLeafNodes,toInfix
+from ...AST.core.abstract_syntax_tree import AbstractSyntaxTree
+from ...AST.core.ast_util import getLeafNodes,toInfix
 
 modalOperators = ["#","@","#'","@'"]
 #TODO add <-> if needed

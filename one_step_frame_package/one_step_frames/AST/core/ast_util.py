@@ -1,4 +1,4 @@
-from AST.core.abstract_syntax_tree import Node
+from ..core.abstract_syntax_tree import Node
 
 
 def getLeafNodes(node:Node,parent=None,result=None):
