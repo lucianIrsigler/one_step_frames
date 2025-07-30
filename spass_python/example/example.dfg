@@ -1,0 +1,33 @@
+% This is the first example given in section 1.1. For the density axiom
+
+begin_problem(StepFrames).
+
+list_of_descriptions.
+name({*StepFrames*}).
+author({*Lucian Irsiger*}).
+status(unsatisfiable).
+description({*Dawg idk*}).
+end_of_list.
+ 
+
+list_of_symbols.
+    functions[(f,1)].
+    predicates[(R,2),(S,2)].
+end_of_list.
+
+
+list_of_formulae(axioms).
+    formula(forall([v], exists([w], equal(f(w), v))), 1).
+    formula(forall([w,v], implies(R(w,v), exists([k], and(R(w,f(k)), R(k,v))))), 2).
+    formula(forall([w,w1], equiv(S(w,w1), exists([v], and(R(w,v), equal(f(w1),v))))), 3).
+end_of_list.    
+
+
+list_of_formulae(conjectures).
+ 
+formula(forall([w,v],equiv(R(w,v),exists([w1],and(S(w,w1),equal(f(w1),v))))),4).
+formula(forall([w,v],equiv(S(w,v),exists([k],and(R(k,v),S(w,k))))),5).
+ 
+end_of_list.
+
+end_problem.
