@@ -1,5 +1,0 @@
-% File takes the first line after this as the first order condition, 
-% and the next as the S. They are interchangeable tho.
-% Lines with % are ignored
-formula(forall([w,v], implies(R(w,v), exists([k], and(R(w,f(k)), R(k,v))))), 2).
-formula(forall([w,w1], equiv(S(w,w1), exists([v], and(R(w,v), equal(f(w1),v))))), 3).

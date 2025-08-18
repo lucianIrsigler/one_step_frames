@@ -7,3 +7,5 @@ __pycache__/
 spass_nonsense
 mysite
 dist
+example
+one_step_frame_package/one_step_frames.egg-info
