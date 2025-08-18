@@ -1,9 +1,9 @@
-import subprocess
-import json
 from pathlib import Path
+import subprocess
+import os
 
 base_dir = Path(__file__).parent
-spass_output = base_dir / "spass_output"
+spass_output =  Path.cwd()  / "spass_output"
 spass_output.mkdir(exist_ok=True)
 
 
@@ -15,15 +15,7 @@ default_config = {
 }
 
 
-def load_config():
-    try:
-        with open(base_dir/"config.json") as f:
-            config = json.load(f)
-    except FileNotFoundError as e:
-        with open(base_dir/"config.json", "w") as f:
-            json.dump(default_config, f, indent=4)
-            config = default_config
-
+def load_config(config:dict[str,str] = default_config):
     problemName = config.get("problemName","StepFrames")
     name = config.get("name","Person")
     author = config.get("author","Author")
@@ -42,19 +34,6 @@ def load_config():
         description = "Output of SPASS python file"
 
     return {"problemName":problemName,"name":name,"author":author,"description":description}
-
-
-def load_args():
-    try:
-        with open(base_dir/"args.txt","r") as f:
-            data = [i.replace("\n","") for i in f.readlines() if "%" not in i]
-        
-        first_order = data[0]
-        S = data[1]
-
-        return first_order,S
-    except FileNotFoundError as e:
-        raise FileNotFoundError("args.txt file is missing")
 
 
 def create_dfg_file(config,first_order,S):
@@ -96,19 +75,14 @@ def create_dfg_file(config,first_order,S):
 
 
 def run_SPASS():
-    SPASS_result = subprocess.run([base_dir/"spass39/SPASS", spass_output/"spass.dfg"], capture_output=True, text=True)
-
-    print("OUTPUT:")
-    print(SPASS_result.stdout)
-
+    if not os.path.exists(f"{Path.cwd()}/spass39/SPASS"):
+        raise FileExistsError("SPASS executable doesnt exist")
+    
+    SPASS_result = subprocess.run([Path.cwd()/"spass39/SPASS", spass_output/"spass.dfg"], capture_output=True, text=True)
+    # return SPASS_result.stdout,SPASS_result.stderr
     with open(spass_output/"output.txt","w") as f:
         f.write(SPASS_result.stdout)
 
     with open(spass_output/"error.txt","w") as f:
         f.write(SPASS_result.stderr)
 
-
-config = load_config()
-first_order,S = load_args()
-create_dfg_file(config,first_order,S)
-run_SPASS()
