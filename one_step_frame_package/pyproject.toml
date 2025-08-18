@@ -5,7 +5,7 @@ authors = [
   { name="Lucian Irsigler", email="2621933@students.wits.ac.za" },
 ]
 description = "One step frame code"
-readme = "README.md"
+readme = "README_p.md"
 requires-python = ">=3.9"
 classifiers = [
     "Programming Language :: Python :: 3",
