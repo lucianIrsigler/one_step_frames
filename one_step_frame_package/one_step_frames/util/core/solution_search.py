@@ -3,7 +3,7 @@ from ..rules.inference_rules import inferenceRules
 from ..rules.ackermann_rules import findVariables,applyAckermannRule,ackermannHeuristic
 
 
-def greedyFirstSearch(formula: str) -> tuple[list[str], list[str]]:
+def greedyFirstSearch(formula: str) -> tuple[list[str], list[str], dict[str,str]]:
     """Perform a greedy first search on the formula to find a solution.
     A Priority stack is used with the ackermann heuristic 
     to prioritize items.
@@ -12,7 +12,10 @@ def greedyFirstSearch(formula: str) -> tuple[list[str], list[str]]:
         formula (str): The formula to search on.
         
     Returns:
-        list[list[str]]: A list, index 0 is states, and index 1 is the log of the search.
+        tuple: A tuple containing:
+            - list[str]: The order of rules 
+            - list[str]: Logging information
+            - dict[str,str]: The corresponding rules index(Nominal rule 1, adjunction 1 etc)
     """
     variables = findVariables(formula)
     numberVariables = len(variables) 
@@ -21,6 +24,10 @@ def greedyFirstSearch(formula: str) -> tuple[list[str], list[str]]:
 
     trackState = []
     trackLog = []
+    trackRules = {}
+    
+    #init
+    trackRules[formula]="INIT"
 
     pq = PriorityStack()
     pq.push(0,formula)   
@@ -48,6 +55,7 @@ def greedyFirstSearch(formula: str) -> tuple[list[str], list[str]]:
             newForm = applyAckermannRule(item)
 
             if (newForm!= item):
+                trackRules[newForm]="ACK"
                 trackLog.append(f"Applying Ackermann rule to {item}, yielding {newForm}")
                 pq.push(5,newForm)
                 appliedAck = True
@@ -57,7 +65,7 @@ def greedyFirstSearch(formula: str) -> tuple[list[str], list[str]]:
             continue
         
         # Do inference rules now
-        currentInferenceRules = inferenceRules(item)
+        currentInferenceRules,trackingRules = inferenceRules(item)
 
         for subform in currentInferenceRules.keys():
             for replacement in currentInferenceRules[subform]:
@@ -68,9 +76,15 @@ def greedyFirstSearch(formula: str) -> tuple[list[str], list[str]]:
                     continue
 
                 score = ackermannHeuristic(tempFormula,numberVariables)
-                # print(f"ADDED {tempFormula} with prio {score}")
+
+                appliedInferenceRule = trackingRules[subform][replacement]
+                trackRules[tempFormula]=appliedInferenceRule
                 trackLog.append(f"Added potential formula {tempFormula} with priority {score}")
+
                 pq.push(score,tempFormula)
 
-    return trackState,trackLog
+    #Filter to only have the rules that leads to the solution
+    trackRules = {k:v for k,v in trackRules.items() if k in trackState}
+
+    return trackState,trackLog,trackRules
 

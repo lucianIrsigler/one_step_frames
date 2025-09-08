@@ -37,30 +37,42 @@ def processFormulaWithAST(formula: str) -> list[str]:
     return infixStrings
 
 
-def inferenceRules(formula:str)->dict[str,list[str]]:
-    """Get all inference rules for a given formula.
-    It runs the nominal and adjunction inference engines
-    and returns a dictionary with the subformulae(formula/statements with <) as keys 
-    and lists of applicable inference rules as values
+def inferenceRules(formula: str) -> tuple[dict[str, list[str]], dict[str, dict[str, str]]]:
+    """
+    Get all inference rules for a given formula.
+
+    Runs the nominal and adjunction inference engines and returns:
+        - a dictionary mapping subformulae (formulas/statements with `<`) 
+        to lists of applicable inference rules, and
+        - a dictionary tracking which rules are applied.
+
     Args:
         formula (str): The formula to process.
+
     Returns:
-        dict[str, list[str]]: A dictionary where keys are formulae and values are lists
-        of inference rules applicable to those formulae.
+        A tuple containing:
+            - dict[str, list[str]]: A mapping of each subformula to the
+                list of inference rules applicable to it.
+            - dict[str, dict[str, str]]: A mapping that tracks which
+                inference rules are applied to which subformulae.
     """
+
     formulae = processFormulaWithAST(formula)
     inferenceEngignes = [NominalInference(),AdjunctionInference()]
     resultDict = {i:[] for i in formulae}
-    trackRules = []
+    trackRules = {i:{} for i in formulae}
 
     for engine in inferenceEngignes:
         for form in resultDict.keys():
             availableInferenceRules = engine.get_inferences(form)
             availableRules = engine.get_applicable_rules(form)
-            trackRules.extend(availableRules)
+
+            for i in range(len(availableInferenceRules)):
+                trackRules[form][availableInferenceRules[i]]=availableRules[i]
+                
             resultDict[form].extend(availableInferenceRules)
     
-    return resultDict
+    return (resultDict,trackRules)
 
 
 if __name__=="__main__":
