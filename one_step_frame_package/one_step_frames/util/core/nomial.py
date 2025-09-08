@@ -10,6 +10,13 @@ class Nominal:
             "u": {}
         }
     
+    def reset(self):
+        self.nominal_dict = {
+            "w": {},
+            "v": {},
+            "u": {}
+        }
+        
     def get_nominal(self, name: str) -> str:
         """Returns a fresh nominal based on the name and value."""
         if name not in self.nominal_dict:

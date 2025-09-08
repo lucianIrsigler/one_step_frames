@@ -102,6 +102,7 @@ def translateCondition(formula:str, ruleOrder:dict[str,str])->str:
         str: The translated formula as a one-step condition, with nominals and 
         characters replaced by their translations.
     """
+    nominalManager.reset()
     formula = replaceNominals(formula)
     formula = replaceCharacters(formula)
 
