@@ -86,14 +86,17 @@ def translateSymbol(symbol:str,formula:str)->str:
     return temp
 
 
-def translateCondition(formula:str)->str:
+def translateCondition(formula:str, ruleOrder:dict[str,str])->str:
     """Translate a formula into a one-step condition by replacing nominals and 
     characters with their corresponding translations. It works by iterating through the
     formula, translating each symbol, and building a base translation. It also handles
     nested translations by storing them in a dictionary and replacing them in the base translation.
+    Lastly, some rules add universal quantification(the nominal rules), thus as the last step, the algorithm
+    checks for any global nominals using the ruleOrder dict, and applies the corresponding quantification.
 
     Args:
         formula (str): The formula to translate, which may contain nominals and characters.
+        ruleOrder (dict[str,str]): Holds the rules order and the rule applied at that step
 
     Returns:
         str: The translated formula as a one-step condition, with nominals and 
@@ -124,6 +127,17 @@ def translateCondition(formula:str)->str:
         base = base.replace(k,v)
     
     base = cleanUp(base)
+
+    # When some nominal rules are applied, they add a quantifer to the whole expression. This checks that
+    globalNominals = []
+    for i,j in ruleOrder.items():
+        if j=="N1":
+            nominal = i.split("<",1)[0]
+            globalNominals.append(f"F({nominal})")
+        #TODO add other cases
+
+    for i in globalNominals:
+        base = f"{i}({base})"
 
     return base
 
