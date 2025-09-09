@@ -23,6 +23,7 @@ operator_map = {
 def checkOperand(token:str)->bool:
     return bool(re.fullmatch(r"[a-hj-zA-HJ-Z]", token))
 
+
 def checkOperator(token: str) -> bool:
     """Check if a token is a valid operator.
 
