@@ -5,7 +5,7 @@ from .text_functions import checkOperand,replaceCharacters
 
 nominalManager = Nominal()
 
-symbolTranslations={
+operatorTranslations={
     # F is for all, E is for exists, R is for relation, f is for function
     # x is old, y is new, z is the rest of form
 
@@ -22,11 +22,10 @@ symbolTranslations={
     "<":"[z"
 }
 
-lastVariable = ""
 
 #Take it like this, if #xy, then put symbol as "#", and "xy" as formula
-def translateSymbol(symbol:str,formula:str)->str:
-    """Translate a symbol into its corresponding translation based on the symbolTranslations dictionary.
+def translateSymbol(symbol:str,formula:str,lastVariable:str)->tuple[str,str]:
+    """Translate a symbol into its corresponding translation based on the operatorTranslations dictionary.
     If the symbol is an operand, it will use the "u" translation. If the symbol is not found 
     in the dictionary, it will raise a KeyError. 
 
@@ -36,27 +35,23 @@ def translateSymbol(symbol:str,formula:str)->str:
         formula (str): the rest of the formula after the symbol
 
     Raises:
-        KeyError: If the symbol is not found in the symbolTranslations dictionary and is not an operand.
+        KeyError: If the symbol is not found in the operatorTranslations dictionary and is not an operand.
 
     Returns:
         str: The translated symbol, which may include variables and the rest of the formula.
     """
-    global lastVariable
-
-    if symbol not in symbolTranslations.keys() and not checkOperand(symbol):
+    
+    # If not operator or operand
+    if symbol not in operatorTranslations.keys() and not checkOperand(symbol):
         raise KeyError("Key not found:",symbol)
     
     isOperand = checkOperand(symbol)
 
-    if (isOperand):
-        temp = symbolTranslations["u"]
-    else:
-        temp = symbolTranslations[symbol]
-    
+    temp = operatorTranslations["u"] if isOperand else operatorTranslations[symbol]
     
     if "x" not in temp or "y" not in temp:
         temp = temp.replace("z","{"+f"{formula}"+"}")
-        return temp
+        return temp,lastVariable
     
 
     nextVariable = ""
@@ -83,7 +78,7 @@ def translateSymbol(symbol:str,formula:str)->str:
     temp = temp.replace("z","{"+f"{formula}"+"}")
     lastVariable = nextVariable
 
-    return temp
+    return temp,lastVariable
 
 
 def translateCondition(formula:str, ruleOrder:dict[str,str])->str:
@@ -103,6 +98,7 @@ def translateCondition(formula:str, ruleOrder:dict[str,str])->str:
         characters replaced by their translations.
     """
     nominalManager.reset()
+
     formula = replaceNominals(formula)
     formula = replaceCharacters(formula)
 
@@ -112,8 +108,10 @@ def translateCondition(formula:str, ruleOrder:dict[str,str])->str:
     lastTranslation = None
     base = ""
 
+    lastVariable = ""
+
     for i,j in enumerate(symbols):
-        translation = translateSymbol(j,formula[i+1:])
+        translation,lastVariable = translateSymbol(j,formula[i+1:],lastVariable)
 
         if lastTranslation!=None:
             key = "{"+lastTranslation+"}"

@@ -15,7 +15,7 @@ operator_map = {
     "i*": "*",
     "i!": "!",
     "i": "i",
-    "^": "^",
+    "^": "&", #TODO might need to change back in case it breaks stuff
     "|": "|",
     "&": "&"
 }
