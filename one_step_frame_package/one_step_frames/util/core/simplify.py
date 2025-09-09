@@ -190,8 +190,6 @@ def simplifyConditon(condition:str)->str:
         print(e)
         return condition
     
-    # print(substitutions)
-
     relations = getRelations(condition)
 
     for rel in relations:
@@ -215,7 +213,7 @@ def simplifyConditon(condition:str)->str:
     return condition
 
 
-if __name__=="__main__":
-    condi = "w_0=w_1->F(v_0)(R(w_1,v_0)->E(w_2)(f(w_2)=v_0&F(v_1)(R(w_2,v_1)->E(w_3)(R(w_3,v_1)^w_3=w_0))))"
-    res = simplifyConditon(condi)
-    print(res)
+# if __name__=="__main__":
+#     condi = "w_0=w_1->F(v_0)(R(w_1,v_0)->E(w_2)(f(w_2)=v_0&F(v_1)(R(w_2,v_1)->E(w_3)(R(w_3,v_1)^w_3=w_0))))"
+#     res = simplifyConditon(condi)
+#     print(res)

@@ -12,3 +12,10 @@ def findStepFrameCondition(rule:str):
     result = translateCondition(finalForm,result[2])
     result = simplifyConditon(result)
     return result
+
+
+def getLogs(rule:str):
+    rule = parseRule(rule)
+    formula = initFormula(rule)
+    result = greedyFirstSearch(formula)
+    return result[1],result[2]
