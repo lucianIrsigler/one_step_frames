@@ -26,6 +26,7 @@ defaultOperators = operators = [
     AbstractOperator("&",2),
     AbstractOperator("->",2),
     AbstractOperator("<->",2),
+    AbstractOperator("|",2)
 ]
 
 

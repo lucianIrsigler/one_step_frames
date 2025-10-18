@@ -104,7 +104,7 @@ def toInfix(node:Node) -> str:
         child_expr = toInfix(node.child)
         
         # Check if child is a binary operator (needs parentheses)
-        if node.child.arity == 2:
+        if node.child.arity == 2 or node.value in ["i", "i*", "i!"]:
             return f"{node.value}({child_expr})"
         else:
             # For simple operands or nested unary ops, no parens needed

@@ -132,6 +132,7 @@ def initFormula(subformula:str)->str:
     subformula = subformula.replace("->","<")
     ast = AbstractSyntaxTree()
     ast.buildTree(subformula)
+
     # Get leaf nodes and their parents
     if (ast.root is None):
         return subformula

@@ -1,6 +1,6 @@
 import heapq
 
-class PriorityStack:
+class PriorityQueue:
     """A priority stack that uses a max-heap
      to manage items based on their priority.
     """
@@ -17,7 +17,8 @@ class PriorityStack:
         """
         # Negate priority because heapq is a min-heap (higher priority first)
         # Negate counter so newer items come out first when priorities are equal
-        heapq.heappush(self.heap, (-priority, -self.counter, item))
+        # Changed to make it more queue like. For stack behaviour, make counter negative
+        heapq.heappush(self.heap, (-priority, self.counter, item))
         self.counter += 1
 
     def pop(self):
@@ -37,3 +38,10 @@ class PriorityStack:
             bool: True if the stack is empty, False otherwise.
         """
         return not self.heap
+    
+    def clear(self):
+        """
+            Clears the priority stack
+        """
+        self.heap.clear()
+        self.counter = 0
