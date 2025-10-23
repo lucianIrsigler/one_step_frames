@@ -1,6 +1,30 @@
-from .priority_stack import PriorityStack
+from .priority_queue import PriorityQueue
 from ..rules.inference_rules import inferenceRules
 from ..rules.ackermann_rules import findVariables,applyAckermannRule,ackermannHeuristic
+
+
+def goalTest(formula:str)->bool:
+    return len(findVariables(formula))==0
+
+
+def getRules(currentFormula:str, formula:str,numVariables:int):
+    output = []
+
+    currentInferenceRules,trackingRules = inferenceRules(formula)
+
+    for subform in currentInferenceRules.keys():
+        for replacement in currentInferenceRules[subform]:
+            tempFormula = currentFormula
+            tempFormula = tempFormula.replace(subform,replacement)
+
+            if (tempFormula.count("=>"))>1:
+                continue
+
+            score = ackermannHeuristic(tempFormula,replacement,numVariables)
+            output.append((score,replacement))
+
+    return output,trackingRules
+
 
 
 def greedyFirstSearch(formula: str) -> tuple[list[str], list[str], dict[str,str]]:
@@ -17,9 +41,16 @@ def greedyFirstSearch(formula: str) -> tuple[list[str], list[str], dict[str,str]
             - list[str]: Logging information
             - dict[str,str]: The corresponding rules index(Nominal rule 1, adjunction 1 etc)
     """
-    variables = findVariables(formula)
-    numberVariables = len(variables) 
-    stillSearch = True
+    if "=>" not in formula:
+        gamma = []
+        delta = formula
+    else:
+        gamma = formula.split("=>")[0].split(",")
+        delta = formula.split("=>")[1]
+
+    variables = set(findVariables(formula))
+
+    search = True
     iterations = 0
 
     trackState = []
@@ -29,62 +60,136 @@ def greedyFirstSearch(formula: str) -> tuple[list[str], list[str], dict[str,str]
     #init
     trackRules[formula]="INIT"
 
-    pq = PriorityStack()
-    pq.push(0,formula)   
-
-    while not pq.empty() and stillSearch and iterations<30:
+    pq = PriorityQueue()
+    # -1, "" represents first
+    pq.push(0,(-1,""))   
+    
+    while not pq.empty() and search and iterations<10:
         iterations+=1
-        item = pq.pop()
-        trackState.append(item)
-        trackLog.append(f"Current formula:{item}")
+        item = pq.pop() 
 
         if (item==None):
             break
+        
 
-        currentVariables = findVariables(item)
+        prevFormula = f"{",".join(gamma)}=>{delta}"
+
+        if prevFormula.split("=>")[0]=="":
+            prevFormula = prevFormula.replace("=>","")
+
+        
+        if goalTest(prevFormula):
+            search = False
+            trackLog.append(f"Goal found:{prevFormula}")
+            continue
+
+        poppedIdx = item[0]
+        poppedFormula = item[1]
+
+        if (poppedIdx!=-1):
+            gamma[poppedIdx] = poppedFormula
+        
+        currentFormula = f"{",".join(gamma)}=>{delta}"
+        
+        
+        if gamma==[]:
+            if (poppedFormula!=""):
+                currentFormula = poppedFormula
+
+            gamma = currentFormula.split("=>")[0].split(",")
+            delta = currentFormula.split("=>")[1]
+            #Couldnt get a gamma
+            if gamma[0]=="":
+                gamma = []
+                currentFormula = currentFormula.replace("=>","")
+
+        trackState.append(currentFormula)
+        trackLog.append(f"Current formula:{currentFormula}")
+
+        if (poppedIdx==-1):
+            for i,j in enumerate(gamma):
+                rulesWithScores,tracking = getRules(currentFormula,j,len(variables))
+
+                for k in rulesWithScores:
+                    pq.push(k[0],(i,k[1]))
+
+                for _,inferenceRules in tracking.items():
+                    for k,v in inferenceRules.items():
+                        tempFormula = currentFormula.replace(j,k)
+                        trackRules[tempFormula] = v
+
+            if (gamma == []):
+                rulesWithScores,tracking = getRules(currentFormula,delta,len(variables))
+
+                for k in rulesWithScores:
+                    pq.push(k[0],(-1,k[1]))
+
+                for _,inferenceRules in tracking.items():
+                    for k,v in inferenceRules.items():
+                        tempFormula = currentFormula.replace(delta,k)
+                        trackRules[tempFormula] = v
+
+            continue
+        
+
         appliedAck = False
 
-        # Goal test
-        if len(currentVariables)==0:
-            stillSearch = False
-            trackLog.append(f"Goal found:{item}")
-            continue
-        
-        #Check ackermann rule
-        for var in variables:
-            newForm = applyAckermannRule(item)
+        for i,j in enumerate(gamma):
+            if appliedAck:
+                continue
 
-            if (newForm!= item):
-                trackRules[newForm]="ACK"
-                trackLog.append(f"Applying Ackermann rule to {item}, yielding {newForm}")
-                pq.push(5,newForm)
-                appliedAck = True
-                break
-        
+            #Checks if can apply, then applys
+            resultFormula = applyAckermannRule(currentFormula,j)
+
+            if (resultFormula==currentFormula):
+                continue
+
+            appliedAck = True
+            gamma = resultFormula.split("=>")[0].split(",")
+            delta = resultFormula.split("=>")[1]
+
+            if (gamma[0]==""):
+                #We have eliminate all the games now
+                gamma.clear()
+                resultFormula = resultFormula.replace("=>","")
+            
+
+            trackRules[resultFormula] = "ACK"
+            trackState.append(resultFormula)
+            trackLog.append(f"Applied ACK to {currentFormula} yielding {resultFormula}")
+
+
+            currentFormula = resultFormula
+
+
         if appliedAck:
-            continue
-        
-        # Do inference rules now
-        currentInferenceRules,trackingRules = inferenceRules(item)
+            pq.clear()
+            for i,j in enumerate(gamma):
+                rulesWithScores,tracking = getRules(currentFormula,j,len(variables))
 
-        for subform in currentInferenceRules.keys():
-            for replacement in currentInferenceRules[subform]:
-                tempFormula = item
-                tempFormula = tempFormula.replace(subform,replacement)
+                for k in rulesWithScores:
+                    pq.push(k[0],(i,k[1]))
+                
+                for _,inferenceRules in tracking.items():
+                    for k,v in inferenceRules.items():
+                        tempFormula = currentFormula.replace(j,k)
+                        trackRules[tempFormula] = v
+            
+            # Case when all the deltas are eliminated. We need to apply rules to the delta now.
+            # The rules applied will probably be the nominal introductions ones
+            if (gamma == []):
+                rulesWithScores,tracking = getRules(currentFormula,delta,len(variables))
 
-                if (tempFormula.count("=>"))>1:
-                    continue
+                for k in rulesWithScores:
+                    pq.push(k[0],(-1,k[1]))
 
-                score = ackermannHeuristic(tempFormula,numberVariables)
-
-                appliedInferenceRule = trackingRules[subform][replacement]
-                trackRules[tempFormula]=appliedInferenceRule
-                trackLog.append(f"Added potential formula {tempFormula} with priority {score}")
-
-                pq.push(score,tempFormula)
+                for _,inferenceRules in tracking.items():
+                    for k,v in inferenceRules.items():
+                        tempFormula = currentFormula.replace(delta,k)
+                        trackRules[tempFormula] = v
 
     #Filter to only have the rules that leads to the solution
     trackRules = {k:v for k,v in trackRules.items() if k in trackState}
 
     return trackState,trackLog,trackRules
-
+    

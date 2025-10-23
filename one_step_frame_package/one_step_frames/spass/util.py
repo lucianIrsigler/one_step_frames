@@ -1,6 +1,7 @@
 from pathlib import Path
 import subprocess
 import os
+import uuid
 
 base_dir = Path(__file__).parent
 spass_output =  Path.cwd()  / "spass_output"
@@ -70,19 +71,19 @@ def create_dfg_file(config,first_order,S):
     end_problem.
     """
 
-    with open(spass_output/"spass.dfg", "w") as f:
+    random_id = str(uuid.uuid4())
+
+    with open(spass_output/f"{random_id}.dfg", "w") as f:
         f.write(dfg_code)
+    
+    return random_id
 
 
-def run_SPASS():
+def run_SPASS(random_id:str):
     if not os.path.exists(f"{Path.cwd()}/spass39/SPASS"):
         raise FileExistsError("SPASS executable doesnt exist")
     
-    SPASS_result = subprocess.run([Path.cwd()/"spass39/SPASS", spass_output/"spass.dfg"], capture_output=True, text=True)
-    # return SPASS_result.stdout,SPASS_result.stderr
-    with open(spass_output/"output.txt","w") as f:
-        f.write(SPASS_result.stdout)
+    SPASS_result = subprocess.run([Path.cwd()/"spass39/SPASS", spass_output/f"{random_id}.dfg"], capture_output=True, text=True)
 
-    with open(spass_output/"error.txt","w") as f:
-        f.write(SPASS_result.stderr)
+    return SPASS_result.stdout,SPASS_result.stderr
 

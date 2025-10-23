@@ -97,23 +97,24 @@ def toInfix(node:Node) -> str:
 
     if node.arity == 0:
         return str(node.value)
+    
     elif node.arity == 1:
         if node.child is None:
             return ""
-        child_expr = toInfix(node.child) 
-        # Only add parentheses for i, i*, and i! operators
-        if node.value in ["i", "i*", "i!"]:
+        child_expr = toInfix(node.child)
+        
+        # Check if child is a binary operator (needs parentheses)
+        if node.child.arity == 2 or node.value in ["i", "i*", "i!"]:
             return f"{node.value}({child_expr})"
         else:
+            # For simple operands or nested unary ops, no parens needed
             return f"{node.value}{child_expr}"
 
     elif node.arity == 2:
-        if node.left is None:
+        if node.left is None or node.right is None:
             return ""
+        
         left_expr = toInfix(node.left)
-
-        if node.right is None:
-            return ""
         right_expr = toInfix(node.right)
         
         return f"{left_expr}{node.value}{right_expr}"

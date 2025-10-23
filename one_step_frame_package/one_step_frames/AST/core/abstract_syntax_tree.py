@@ -6,6 +6,7 @@ from ..errors.ast_error import ASTError
 defaultOperators = operators = [
     # perf 2
     AbstractOperator("=>",2,2),
+    AbstractOperator(",",2,2),
 
     # perf 1
     AbstractOperator("<",2,1),
@@ -25,6 +26,7 @@ defaultOperators = operators = [
     AbstractOperator("&",2),
     AbstractOperator("->",2),
     AbstractOperator("<->",2),
+    AbstractOperator("|",2)
 ]
 
 
@@ -133,7 +135,8 @@ class AbstractSyntaxTree:
                 stack.append(node)
         
         if len(stack) != 1:
-            raise ASTError(f"Invalid expression: stack has {len(stack)} elements after processing")
+            errorString = f"Invalid expression: stack has {len(stack)} elements after processing"
+            raise ASTError(errorString)
         
         self.root = stack[0]
         return self.root

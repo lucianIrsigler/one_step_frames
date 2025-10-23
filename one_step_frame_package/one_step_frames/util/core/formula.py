@@ -4,7 +4,7 @@ from ...AST.core.ast_util import getLeafNodes,toInfix
 
 modalOperators = ["#","@","#'","@'"]
 #TODO add <-> if needed
-logicConnectives = ["=>","<","<'","#","#'","@","@'","~","i*","i!","i","^","|","&","->","<->"]
+logicConnectives = ["=>","<","<'","#","#'","@","@'","~","i*","i!","i","^","|","&","->","<->",","]
 
 
 def findAtomicFormulas(formula:str,additionalConnectives:list[str]=[])->list[str]:
@@ -132,6 +132,7 @@ def initFormula(subformula:str)->str:
     subformula = subformula.replace("->","<")
     ast = AbstractSyntaxTree()
     ast.buildTree(subformula)
+
     # Get leaf nodes and their parents
     if (ast.root is None):
         return subformula

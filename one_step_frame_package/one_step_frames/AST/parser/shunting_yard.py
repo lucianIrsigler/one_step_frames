@@ -42,12 +42,14 @@ associativity_map = {
     "^": "R",
     "|": "L",
     "&": "L",
-    "]": "L" 
+    "]": "L",
+    ",": "L"
 }
 
 precedence_map = {
     ">": 1,    
-    "=": 1,    
+    "=": 1,
+    ",": 2,  
     "|": 2,
     "&": 2,
     "<": 3,
@@ -65,8 +67,9 @@ precedence_map = {
 }
 
 regexPatterns={
-    "OPERATOR": r"i|[=><\[\]\#\$\@\%\~\*\!\^|&]",  # i operator alone first
+    "OPERATOR": r"i|[=><\[\]\#\$\@\%\~\*\!\^|&|,]",  # i operator alone first
     "OPERAND": r"[a-hj-zA-HJ-Z]",                  # operands single letter excluding 'i'
+    "PAREN": r"[()]",
     "SKIP": r"\s+",
     "MISMATCH": r"."
 }
@@ -92,9 +95,6 @@ def replaceCharacters(formula: str, reverse: bool = False) -> str:
 
         for i, j in operator_map.items():
             formula = formula.replace(i, j)
-
-        formula = formula.replace("(", "")
-        formula = formula.replace(")", "")
     else:
         mapping = nominalManager.getMapping()
         reverseNominalMap = {v:k for k,v in mapping.items()}
@@ -140,6 +140,7 @@ def tokenize(formula:str)-> list:
         ("OPERATOR", regexPatterns["OPERATOR"]),  # i operator alone first
         ("OPERAND",  regexPatterns["OPERAND"]),                  # operands single letter excluding 'i'
         ("SKIP", regexPatterns["SKIP"]),
+        ("PAREN",regexPatterns["PAREN"]),
         ("MISMATCH", regexPatterns["MISMATCH"]),
     ]
 
@@ -186,6 +187,7 @@ def checkOperator(token: str) -> bool:
         bool: True if the token is a valid operator, otherwise False.
     """
     return bool(re.fullmatch(regexPatterns["OPERATOR"], token))
+
 
 
 def shuntingYardAlgorithm(formula: str) -> str:

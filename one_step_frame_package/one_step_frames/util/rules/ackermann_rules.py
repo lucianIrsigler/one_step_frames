@@ -14,19 +14,19 @@ def findVariables(formula:str):
     return variables
 
 
-def checkPolarity(formula:str,varable:str)->bool|None:
+def checkPolarity(formula:str,variable:str)->bool|None:
     """Check the polarity of a variable in a formula.
 
     Args:
         formula (str): The formula to check.
-        varable (str): The variable to check the polarity of.
+        variable (str): The variable to check the polarity of.
 
     Returns:
         None|bool: Returns true if polarity is positive, false if negative, 
         and None if the variable is not found/not valid.
     """
     
-    if varable not in formula or formula.find("<")==-1:
+    if variable not in formula or formula.find("<")==-1:
         return None
     
     splitParts = formula.split("<")
@@ -34,13 +34,13 @@ def checkPolarity(formula:str,varable:str)->bool|None:
     if (len(splitParts)!=2):
         return None
 
-    if splitParts[0].find(varable)!=-1:
+    if splitParts[0].find(variable)!=-1:
         return False
     else:
         return True 
 
 
-def ackermannHeuristic(formula:str,totalNumberVariables:int=-1):
+def ackermannHeuristic(formula:str,subformula:str,totalNumberVariables:int=-1):
     """Calculate the Ackermann heuristic for a given formula.
     If no => -> get -2, if varaibles eliminated, return the number of variables eliminated -2.
     Checks both version of the Ackermann rule.
@@ -58,6 +58,12 @@ def ackermannHeuristic(formula:str,totalNumberVariables:int=-1):
         int: The score based on the Ackermann heuristic.
     """
 
+    if (formula.find(subformula)==-1):
+        errorMessage = f"{subformula} does not occur in formula {formula}"
+        raise ValueError(errorMessage)
+    
+    totalNumberVariables = len(findVariables(formula))
+    
     if (formula.find("=>")==-1):
         checkNumberVariablesElim = totalNumberVariables-len(findVariables(formula))
         if (checkNumberVariablesElim>0):
@@ -71,120 +77,200 @@ def ackermannHeuristic(formula:str,totalNumberVariables:int=-1):
     if (len(arguments)!=2):
         return -1
     
-    gamma = arguments[0]
+    gamma = arguments[0].split(",")
     delta = arguments[1]
 
-    gamma_args = gamma.split("<")
+    subformula_args = subformula.split("<")
 
-    if (gamma_args[0] in variables):
-        score+=1
+    if (len(subformula_args)!=2):
+        return -1
 
-        if (gamma_args[1].find(gamma_args[0])==-1):
+    # ackermann 1
+    if (subformula_args[0] in variables):
+        currentVariable = subformula_args[0]
+        
+        # +1 if you cant find x in phi
+        if (subformula_args[1].find(currentVariable)==-1):
             score+=1
 
-        polarity = checkPolarity(delta,gamma_args[0])
+        allPositive = True
+        for arg in gamma:
+            polarity = checkPolarity(arg,currentVariable)
 
-        if (polarity==None):
-            #what i do here xd
-            return score
-        elif (polarity==False):
+            if polarity==False:
+                allPositive = False
+
+        # +1 if x is postive in all gamma
+        if (allPositive):
+            score+=1
+        
+        # +1 if x is negative/not there in delta
+        if checkPolarity(delta,currentVariable)!= True:
+            score+=1
+    # ackermann 2
+    elif (subformula_args[1] in variables):
+        currentVariable = subformula_args[1]
+        
+        # +1 if you cant find x in phi
+        if (subformula_args[0].find(currentVariable)==-1):
             score+=1
 
-    elif (gamma_args[1] in variables):
-        score+=1
-        if (gamma_args[0].find(gamma_args[1])==-1):
-            score+=1
+        allNegative = True
+        for arg in gamma:
+            if (arg == subformula):
+                continue
 
-        polarity = checkPolarity(delta,gamma_args[1])
+            polarity = checkPolarity(arg,currentVariable)
 
-        if (polarity==None):
-            #what i do here xd
-            return score
-        elif (polarity==True):
+            if polarity==True:
+                allNegative = False
+
+        # +1 if x is negative in all gamma
+        if (allNegative):
             score+=1
-        #polarity now
+        
+        # +1 if x is postive/not there in delta
+        if checkPolarity(delta,currentVariable)!= False:
+            score+=1
     else:
         return 0
     
     return score
 
 
-def checkAckermannConditions(formula: str, var: str) -> tuple[bool, int]:
+def checkAckermannConditions(formula: str, subformula: str) -> tuple[bool, int, str]:
     """Check if the Ackermann rule can be applied to a given formula with a specific variable.
     Args:
         formula (str): The formula to check.
-        var (str): The variable to check.
+        subformula (str): The subformula to check
     Returns:
         tuple: A tuple containing a boolean indicating if the rule can be applied and an integer
-        indicating the rule index (0 or 1) if applicable, or -1 if not applicable.
+        indicating the rule index (0 or 1) if applicable, or -1 if not applicable. Also str to
+        indicate the variable
     """
-    if (formula.find("=>")==1):
-        return (False,-1)
-    
-    splitArgs = formula.split("=>")
+    emptyOutput = (False,-1,"")
 
-    if (len(splitArgs)!=2):
-        return (False,-1)
+    if (formula.find(formula)==-1):
+        errorMessage = f"{subformula} does not occur in formula {formula}"
+        raise ValueError(errorMessage)
     
-    gamma,delta = splitArgs[0],splitArgs[1]
-    gamma_args = gamma.split("<")
-    antecedent,consequent = gamma_args[0],gamma_args[1]
+    if (formula.find("=>")==-1):
+        return emptyOutput
+    
+    variables = findVariables(formula)
+    arguments = formula.split("=>")
 
-    if len(gamma_args)!=2:
-        return (False,-1)
-    
-    if var in antecedent:
-        # x<phi=>delta
-        if consequent.find(var)!=-1 or antecedent!=var:
-            return (False,-1)
+    gamma = arguments[0].split(",")
+    delta = arguments[1]
+
+    subformula_args = subformula.split("<")
+
+    if (len(subformula_args)!=2):
+        return emptyOutput
+
+    # ackermann 1
+    canApply = True
+    ackRule = -1
+    currentVariable = ""
+
+    if (subformula_args[0] in variables):
+        currentVariable = subformula_args[0]
         
-        polarity = checkPolarity(delta,var)
+        # +1 if you cant find x in phi
+        if not (subformula_args[1].find(currentVariable)==-1):
+            canApply = False
 
-        if (polarity==None):
-            #idk what to here xd
-            return (False,-1)
-        elif (polarity==False):
-            return (True,1)
-    elif var in consequent:
-        # phi<x=>delta
-        if antecedent.find(var)!=-1 or consequent!=var:
-            return (False,-1)
+        allPositive = True
+        for arg in gamma:
+            polarity = checkPolarity(arg,currentVariable)
+
+            if polarity==False:
+                allPositive = False
+
+        # +1 if x is postive in all gamma
+        if not (allPositive):
+            canApply = False
         
-        polarity = checkPolarity(delta,var)
+        # +1 if x is negative/not there in delta
+        if not checkPolarity(delta,currentVariable)!= True:
+            canApply = False
 
-        if (polarity==None):
-            #idk what to here xd
-            return (False,-1)
-        elif (polarity==True):
-            return (True,0)
+        ackRule = 0 if canApply else -1
+    # ackermann 2
+    elif (subformula_args[1] in variables):
+        currentVariable = subformula_args[1]
+        
+        canApply = True
 
-    return (False,-1)
+        # +1 if you cant find x in phi
+        if not (subformula_args[0].find(currentVariable)==-1):
+            canApply = False
+
+        allNegative = True
+        for arg in gamma:
+            if (arg == subformula):
+                continue
+
+            polarity = checkPolarity(arg,currentVariable)
+
+            if polarity==True:
+                allNegative = False
+
+        # +1 if x is negative in all gamma
+        if not (allNegative):
+            canApply = False
+        
+        # +1 if x is postive/not there in delta
+        if not checkPolarity(delta,currentVariable)!= False:
+            canApply = False
+
+        ackRule = 1 if canApply else -1
+    
+    if (ackRule==-1):
+        return emptyOutput
+    
+    return (canApply,ackRule,currentVariable)
 
 
-def applyAckermannRule(formula:str)->str:
-    """Apply the Ackermann rule to a given formula.
+def applyAckermannRule(formula:str,subformula:str)->str:
+    """
+    Apply the Ackermann rule to a given formula.
+    
     Args:
         formula (str): The formula to apply the Ackermann rule to.
     Returns:
         str: The modified formula after applying the Ackermann rule, or the original formula if
         Ackermann rule cannot be applied.
     """
-    varaibles = findVariables(formula)
+    checkCondition = checkAckermannConditions(formula,subformula)
+    canApply,rule,var = checkCondition
+
+    if not (canApply):
+        return formula
     
-    for var in varaibles:
-        ackermannApplicable = checkAckermannConditions(formula,var)
-        canApply = ackermannApplicable[0]
-        rule = ackermannApplicable[1]
+    arguments = formula.split("=>")
 
-        if (not canApply):
-            continue
-        
-        splitFormula = formula.split("=>")
-        gamma,delta = splitFormula[0],splitFormula[1]
+    gamma = arguments[0].split(",")
+    delta = arguments[1]
 
-        if (canApply):
-            phi = gamma.split("<")[rule]
-            delta = delta.replace(var,phi)
-            return f"{delta}"
+    idx = gamma.index(subformula)
+    
+    """
+    checkAckermannConditions2(denote as f) returns 0 if ack rule 1, and 
+    1 if rule 2. However this doesnt correlate to the actual formula
+    we need to sub in.
+    So if ack 1[or 0 by f], then its x < phi. Thus index 1 is the phi
+    If ack 2[or 1 by f], then its phi < x. Thus index  0 is the phi.
+    Take the abs(rule-1): 
+       abs(0-1) => 1 [works for rule 1]
+       abs(1-1) => 0 [works for rule 2]
+    """
+    rule = abs(rule-1)
 
-    return formula
+    phi = gamma[idx].split("<")[rule]
+
+    gamma = [j.replace(var,phi) for i,j in enumerate(gamma) if i!=idx]
+
+    delta = delta.replace(var,phi)
+
+    return f"{",".join(gamma)}=>{delta}"
