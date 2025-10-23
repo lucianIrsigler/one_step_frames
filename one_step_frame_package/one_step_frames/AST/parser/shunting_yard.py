@@ -68,7 +68,7 @@ precedence_map = {
 
 regexPatterns={
     "OPERATOR": r"i|[=><\[\]\#\$\@\%\~\*\!\^|&|,]",  # i operator alone first
-    "OPERAND": r"[a-hj-zA-HJ-Z]",                  # operands single letter excluding 'i'
+    "OPERAND": r"[a-hj-zA-HJ-Z](?:_\d+)?",                  # operands single letter excluding 'i'
     "PAREN": r"[()]",
     "SKIP": r"\s+",
     "MISMATCH": r"."

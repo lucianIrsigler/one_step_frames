@@ -9,7 +9,7 @@ def findVariables(formula:str):
         set: A set of variables found in the formula.
     """
     # Matches single lowercase letters that are not 'u', 'v', 'w', or 'i'
-    matches = re.findall(r"\b(?![uvwi])([a-z])\b", formula)
+    matches = re.findall(r"[a-hj-tx-z](?:_\d+)?", formula)
     variables = set(matches)
     return variables
 
