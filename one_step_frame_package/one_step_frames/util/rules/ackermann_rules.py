@@ -62,15 +62,12 @@ def ackermannHeuristic(formula:str,subformula:str,totalNumberVariables:int=-1):
         errorMessage = f"{subformula} does not occur in formula {formula}"
         raise ValueError(errorMessage)
     
-    totalNumberVariables = len(findVariables(formula))
     
     if (formula.find("=>")==-1):
         checkNumberVariablesElim = totalNumberVariables-len(findVariables(formula))
-        if (checkNumberVariablesElim>0):
-            return checkNumberVariablesElim-2
-        return -2
+        return checkNumberVariablesElim-3 # -3 since cant apply
     
-    score = 0
+    score = -3 + totalNumberVariables-len(findVariables(formula))
     variables = findVariables(formula)
     arguments = formula.split("=>")
 
