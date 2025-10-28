@@ -96,10 +96,15 @@ def greedyFirstSearch(formula: str) -> tuple[list[str], list[str], dict[str,str]
             if (poppedFormula!=""):
                 currentFormula = poppedFormula
 
-            gamma = currentFormula.split("=>")[0].split(",")
-            delta = currentFormula.split("=>")[1]
+
+            if (currentFormula.find("=>")!=-1):
+                gamma = currentFormula.split("=>")[0].split(",")
+                delta = currentFormula.split("=>")[1]
+            else:
+                delta = currentFormula
+            
             #Couldnt get a gamma
-            if gamma[0]=="":
+            if gamma==[] or gamma[0]=="":
                 gamma = []
                 currentFormula = currentFormula.replace("=>","")
 
