@@ -21,7 +21,7 @@ operator_map = {
 }
 
 def checkOperand(token:str)->bool:
-    return bool(re.fullmatch(r"[a-hj-zA-HJ-Z]", token))
+    return bool(re.fullmatch(r"[a-hj-zA-HJ-Z](?:_\d+)?", token))
 
 
 def checkOperator(token: str) -> bool:
