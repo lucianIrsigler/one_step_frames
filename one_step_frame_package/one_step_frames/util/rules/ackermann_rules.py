@@ -266,8 +266,10 @@ def applyAckermannRule(formula:str,subformula:str)->str:
 
     phi = gamma[idx].split("<")[rule]
 
-    gamma = [j.replace(var,phi) for i,j in enumerate(gamma) if i!=idx]
+    gamma = [re.sub(rf"\b{var}(?!\d)", phi, j) for i,j in enumerate(gamma) if i!=idx]
+    # gamma = [j.replace(var,phi) for i,j in enumerate(gamma) if i!=idx]
 
-    delta = delta.replace(var,phi)
+    # delta = delta.replace(var,phi)
+    delta = re.sub(rf"\b{var}(?!\d)", phi, delta)
 
     return f"{",".join(gamma)}=>{delta}"
