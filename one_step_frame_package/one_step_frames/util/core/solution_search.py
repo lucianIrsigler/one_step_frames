@@ -64,7 +64,7 @@ def greedyFirstSearch(formula: str) -> tuple[list[str], list[str], dict[str,str]
     # -1, "" represents first
     pq.push(0,(-1,""))   
     
-    while not pq.empty() and search and iterations<10:
+    while not pq.empty() and search:
         iterations+=1
         item = pq.pop() 
 
@@ -91,7 +91,9 @@ def greedyFirstSearch(formula: str) -> tuple[list[str], list[str], dict[str,str]
         
         currentFormula = f"{",".join(gamma)}=>{delta}"
         
-        
+        #Some nominal rules add ",", making sure it gets caught
+        gamma = [part for item in gamma for part in item.split(",")]
+
         if gamma==[]:
             if (poppedFormula!=""):
                 currentFormula = poppedFormula
@@ -139,12 +141,13 @@ def greedyFirstSearch(formula: str) -> tuple[list[str], list[str], dict[str,str]
 
         appliedAck = False
 
+    
         for i,j in enumerate(gamma):
             if appliedAck:
                 continue
 
             #Checks if can apply, then applys
-            resultFormula = applyAckermannRule(currentFormula,j)
+            resultFormula,var = applyAckermannRule(currentFormula,j)
 
             if (resultFormula==currentFormula):
                 continue
@@ -161,7 +164,7 @@ def greedyFirstSearch(formula: str) -> tuple[list[str], list[str], dict[str,str]
 
             trackRules[resultFormula] = "ACK"
             trackState.append(resultFormula)
-            trackLog.append(f"Applied ACK to {currentFormula} yielding {resultFormula}")
+            trackLog.append(f"Eliminated {var} in {j} yielding {resultFormula}")
 
 
             currentFormula = resultFormula

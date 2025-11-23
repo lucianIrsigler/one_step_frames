@@ -26,7 +26,7 @@ def checkPolarity(formula:str,variable:str)->bool|None:
         and None if the variable is not found/not valid.
     """
     
-    if variable not in formula or formula.find("<")==-1:
+    if variable not in findVariables(formula) or formula.find("<")==-1:
         return None
     
     splitParts = formula.split("<")
@@ -34,7 +34,7 @@ def checkPolarity(formula:str,variable:str)->bool|None:
     if (len(splitParts)!=2):
         return None
 
-    if splitParts[0].find(variable)!=-1:
+    if variable in findVariables(splitParts[0]):
         return False
     else:
         return True 
@@ -200,7 +200,7 @@ def checkAckermannConditions(formula: str, subformula: str) -> tuple[bool, int, 
         canApply = True
 
         # +1 if you cant find x in phi
-        if not (subformula_args[0].find(currentVariable)==-1):
+        if currentVariable in findVariables(subformula_args[0]):
             canApply = False
 
         allNegative = True
@@ -229,7 +229,7 @@ def checkAckermannConditions(formula: str, subformula: str) -> tuple[bool, int, 
     return (canApply,ackRule,currentVariable)
 
 
-def applyAckermannRule(formula:str,subformula:str)->str:
+def applyAckermannRule(formula:str,subformula:str)->tuple[str, str]:
     """
     Apply the Ackermann rule to a given formula.
     
@@ -243,7 +243,7 @@ def applyAckermannRule(formula:str,subformula:str)->str:
     canApply,rule,var = checkCondition
 
     if not (canApply):
-        return formula
+        return formula,""
     
     arguments = formula.split("=>")
 
@@ -272,4 +272,4 @@ def applyAckermannRule(formula:str,subformula:str)->str:
     # delta = delta.replace(var,phi)
     delta = re.sub(rf"\b{var}(?!\d)", phi, delta)
 
-    return f"{",".join(gamma)}=>{delta}"
+    return f"{",".join(gamma)}=>{delta}",var
