@@ -66,8 +66,10 @@ class NominalRules:
         if not checkNominal(phi) or "@" not in psi or not re.fullmatch(r"^@.*$", psi):
             return None
         
+        nominals_v = set(getNominals(phi)).union(set(getNominals(psi)))
+        v = f"v_{len(nominals_v)}"
         # TODO nominal it up
-        return f"{phi}<@v,v<{psi.replace("@","")}"
+        return f"{phi}<@{v},{v}<{psi.replace("@","")}"
     
     @staticmethod
     def rule_7(phi: str, psi: str) -> Optional[str]:

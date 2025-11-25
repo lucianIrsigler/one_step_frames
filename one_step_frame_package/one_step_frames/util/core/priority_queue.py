@@ -20,6 +20,8 @@ class PriorityQueue:
         # Changed to make it more queue like. For queue behaviour, make counter negative
         heapq.heappush(self.heap, (-priority, self.counter, item))
         self.counter += 1
+    
+    
 
     def pop(self):
         """ Pop the item with the highest priority from the queue.
@@ -28,7 +30,7 @@ class PriorityQueue:
             any: The item with the highest priority, or None if the queue is empty.
         """
         if self.heap:
-            return heapq.heappop(self.heap)[-1]
+            return heapq.heappop(self.heap)
         return None
 
     def empty(self):

@@ -1,6 +1,12 @@
 import re
 
 
+def findNominals(string:str):
+    matches = re.findall(r"\b[uwv](?:_\d+)?\b", string)
+    nominals = set(matches)
+    return nominals
+
+
 def findVariables(formula:str):
     """Find all variables in a given formula.
     Args:
@@ -57,22 +63,26 @@ def ackermannHeuristic(formula:str,subformula:str,totalNumberVariables:int=-1):
     Returns:
         int: The score based on the Ackermann heuristic.
     """
+    checkNumberVariablesElim = totalNumberVariables-len(findVariables(formula))
+    numberNominals = len(findNominals(formula))
+
+    baseScore = checkNumberVariablesElim + numberNominals
 
     if (formula.find(subformula)==-1):
         errorMessage = f"{subformula} does not occur in formula {formula}"
         raise ValueError(errorMessage)
     
     
+
     if (formula.find("=>")==-1):
-        checkNumberVariablesElim = totalNumberVariables-len(findVariables(formula))
-        return checkNumberVariablesElim-3 # -3 since cant apply
+        return baseScore-3 # -3 since cant apply
     
-    score = -3 + totalNumberVariables-len(findVariables(formula))
+    score = -3 + baseScore
     variables = findVariables(formula)
     arguments = formula.split("=>")
 
     if (len(arguments)!=2):
-        return -1
+        return baseScore
     
     gamma = arguments[0].split(",")
     delta = arguments[1]
@@ -80,7 +90,7 @@ def ackermannHeuristic(formula:str,subformula:str,totalNumberVariables:int=-1):
     subformula_args = subformula.split("<")
 
     if (len(subformula_args)!=2):
-        return -1
+        return baseScore
 
     # ackermann 1
     if (subformula_args[0] in variables):
@@ -130,7 +140,7 @@ def ackermannHeuristic(formula:str,subformula:str,totalNumberVariables:int=-1):
         if checkPolarity(delta,currentVariable)!= False:
             score+=1
     else:
-        return 0
+        return baseScore
     
     return score
 
@@ -155,6 +165,11 @@ def checkAckermannConditions(formula: str, subformula: str) -> tuple[bool, int, 
         return emptyOutput
     
     variables = findVariables(formula)
+    
+    # toAdd = [f"i({i})" for i in variables]
+    # for i in toAdd:
+    #     variables.add(i)
+    
     arguments = formula.split("=>")
 
     gamma = arguments[0].split(",")
