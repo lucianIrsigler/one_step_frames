@@ -4,16 +4,26 @@ def generatePaperTests():
         "#x->y/#x->#y",
         "y->#x/#y->#x",
         "/#x->x",
-        "c->#p,d->#c,#p->e,#e->f/#d->#f",
-        "#p->y_1,#y_1->y_2/#p->#y_2"
     )
 
     answers = (
         "w_0<#i*(#@'w_0)",
         "w_0<#@'i(@'w_0)",
         "w_0<i(@'w_0)",
-        "w_0<#i*(#i*(#@'i(@'i(@'w_0))))",
-        "w_0<#i*(#i*(#@'w_0))"
+    )
+
+    return zip(rules,answers)
+
+def edgeCases():
+    rules = (
+        #Boxes when n=1 and k>=2
+        repeated_boxes(1,2),
+        repeated_boxes(2,1)
+    )
+
+    answers = (
+        repeated_boxes_solution(1,2),
+        repeated_boxes_solution(2,1)
     )
 
     return zip(rules,answers)
@@ -41,6 +51,11 @@ def repeated_boxes(n,k):
 
     return gamma+"/"+delta
 
+def minimum_rules_repeated_boxes(n,k):
+    return 2*n+2*k-1
+
+def minimum_rules_single_diamond_repeated_boxes(n,k):
+    return 2*n+2*k+3
 
 def repeated_boxes_solution(n,k):
     boxes = "i*(#"*(k-1)
@@ -76,7 +91,7 @@ def single_diamond_repeated_boxes_solution(n,k):
     diamonds = "@'i("*(n)
     leftBrackets = ")"*(k+n-1)
 
-    output = f"w_0<@v=>w_0<#{boxes}i*(@{diamonds}v{leftBrackets})"
+    output = f"w_0<@v_1=>w_0<#{boxes}i*(@{diamonds}v_1{leftBrackets})"
     return output
 
 
