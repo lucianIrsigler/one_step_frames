@@ -1,6 +1,12 @@
 import re
 
 
+def findNominals(string:str):
+    matches = re.findall(r"\b[uwv](?:_\d+)?\b", string)
+    nominals = set(matches)
+    return nominals
+
+
 def findVariables(formula:str):
     """Find all variables in a given formula.
     Args:
@@ -26,7 +32,7 @@ def checkPolarity(formula:str,variable:str)->bool|None:
         and None if the variable is not found/not valid.
     """
     
-    if variable not in formula or formula.find("<")==-1:
+    if variable not in findVariables(formula) or formula.find("<")==-1:
         return None
     
     splitParts = formula.split("<")
@@ -34,7 +40,7 @@ def checkPolarity(formula:str,variable:str)->bool|None:
     if (len(splitParts)!=2):
         return None
 
-    if splitParts[0].find(variable)!=-1:
+    if variable in findVariables(splitParts[0]):
         return False
     else:
         return True 
@@ -57,22 +63,26 @@ def ackermannHeuristic(formula:str,subformula:str,totalNumberVariables:int=-1):
     Returns:
         int: The score based on the Ackermann heuristic.
     """
+    checkNumberVariablesElim = totalNumberVariables-len(findVariables(formula))
+    numberNominals = len(findNominals(formula))
+
+    baseScore = checkNumberVariablesElim + numberNominals
 
     if (formula.find(subformula)==-1):
         errorMessage = f"{subformula} does not occur in formula {formula}"
         raise ValueError(errorMessage)
     
     
+
     if (formula.find("=>")==-1):
-        checkNumberVariablesElim = totalNumberVariables-len(findVariables(formula))
-        return checkNumberVariablesElim-3 # -3 since cant apply
+        return baseScore-3 # -3 since cant apply
     
-    score = -3 + totalNumberVariables-len(findVariables(formula))
+    score = -3 + baseScore
     variables = findVariables(formula)
     arguments = formula.split("=>")
 
     if (len(arguments)!=2):
-        return -1
+        return baseScore
     
     gamma = arguments[0].split(",")
     delta = arguments[1]
@@ -80,7 +90,7 @@ def ackermannHeuristic(formula:str,subformula:str,totalNumberVariables:int=-1):
     subformula_args = subformula.split("<")
 
     if (len(subformula_args)!=2):
-        return -1
+        return baseScore
 
     # ackermann 1
     if (subformula_args[0] in variables):
@@ -130,7 +140,7 @@ def ackermannHeuristic(formula:str,subformula:str,totalNumberVariables:int=-1):
         if checkPolarity(delta,currentVariable)!= False:
             score+=1
     else:
-        return 0
+        return baseScore
     
     return score
 
@@ -155,6 +165,11 @@ def checkAckermannConditions(formula: str, subformula: str) -> tuple[bool, int, 
         return emptyOutput
     
     variables = findVariables(formula)
+    
+    # toAdd = [f"i({i})" for i in variables]
+    # for i in toAdd:
+    #     variables.add(i)
+    
     arguments = formula.split("=>")
 
     gamma = arguments[0].split(",")
@@ -200,7 +215,7 @@ def checkAckermannConditions(formula: str, subformula: str) -> tuple[bool, int, 
         canApply = True
 
         # +1 if you cant find x in phi
-        if not (subformula_args[0].find(currentVariable)==-1):
+        if currentVariable in findVariables(subformula_args[0]):
             canApply = False
 
         allNegative = True
@@ -229,7 +244,7 @@ def checkAckermannConditions(formula: str, subformula: str) -> tuple[bool, int, 
     return (canApply,ackRule,currentVariable)
 
 
-def applyAckermannRule(formula:str,subformula:str)->str:
+def applyAckermannRule(formula:str,subformula:str)->tuple[str, str]:
     """
     Apply the Ackermann rule to a given formula.
     
@@ -243,7 +258,7 @@ def applyAckermannRule(formula:str,subformula:str)->str:
     canApply,rule,var = checkCondition
 
     if not (canApply):
-        return formula
+        return formula,""
     
     arguments = formula.split("=>")
 
@@ -266,8 +281,10 @@ def applyAckermannRule(formula:str,subformula:str)->str:
 
     phi = gamma[idx].split("<")[rule]
 
-    gamma = [j.replace(var,phi) for i,j in enumerate(gamma) if i!=idx]
+    gamma = [re.sub(rf"\b{var}(?!\d)", phi, j) for i,j in enumerate(gamma) if i!=idx]
+    # gamma = [j.replace(var,phi) for i,j in enumerate(gamma) if i!=idx]
 
-    delta = delta.replace(var,phi)
+    # delta = delta.replace(var,phi)
+    delta = re.sub(rf"\b{var}(?!\d)", phi, delta)
 
-    return f"{",".join(gamma)}=>{delta}"
+    return f"{",".join(gamma)}=>{delta}",var

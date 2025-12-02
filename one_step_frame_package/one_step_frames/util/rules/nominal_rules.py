@@ -29,7 +29,7 @@ class NominalRules:
         if len(psi_args) != 2:
             return None
         
-        return f"{phi}<{psi_args[0]}&{phi}<{psi_args[1]}"
+        return f"{phi}<{psi_args[0]},{phi}<{psi_args[1]}"
     
     @staticmethod
     def rule_3(phi: str, psi: str) -> Optional[Union[str, tuple[str, str]]]:
@@ -66,8 +66,10 @@ class NominalRules:
         if not checkNominal(phi) or "@" not in psi or not re.fullmatch(r"^@.*$", psi):
             return None
         
+        nominals_v = set(getNominals(phi)).union(set(getNominals(psi)))
+        v = f"v_{len(nominals_v)}"
         # TODO nominal it up
-        return f"{phi}<@v&v<{psi}"
+        return f"{phi}<@{v},{v}<{psi.replace("@","")}"
     
     @staticmethod
     def rule_7(phi: str, psi: str) -> Optional[str]:
@@ -76,7 +78,7 @@ class NominalRules:
             return None
         
         # TODO nominal it up
-        return f"{phi}<@'w&w<{psi}"
+        return f"{phi}<@'w,w<{psi}"
     
     @staticmethod
     def rule_8(phi: str, psi: str) -> Optional[str]:

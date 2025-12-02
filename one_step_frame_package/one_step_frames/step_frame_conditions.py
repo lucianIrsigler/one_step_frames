@@ -18,4 +18,4 @@ def getLogs(rule:str):
     rule = parseRule(rule)
     formula = initFormula(rule)
     result = greedyFirstSearch(formula)
-    return result[1],result[2]
+    return result

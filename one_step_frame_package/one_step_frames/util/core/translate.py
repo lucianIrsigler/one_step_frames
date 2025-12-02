@@ -19,7 +19,10 @@ operatorTranslations={
     "i":"F(y)(y=f(x)[z)",
 
     "u":"x=yz",
-    "<":"[z"
+    "<":"[z",
+
+    #TODO might need to change
+    ">":"[z"
 }
 
 

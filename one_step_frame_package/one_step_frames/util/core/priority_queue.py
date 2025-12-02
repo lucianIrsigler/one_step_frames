@@ -1,7 +1,7 @@
 import heapq
 
 class PriorityQueue:
-    """A priority stack that uses a max-heap
+    """A priority queue that uses a max-heap
      to manage items based on their priority.
     """
     def __init__(self):
@@ -9,39 +9,41 @@ class PriorityQueue:
         self.counter = 0  # Increases with every push
 
     def push(self, priority:int, item):
-        """Push an item onto the stack with a given priority.
+        """Push an item onto the queue with a given priority.
 
         Args:
             priority (int): The priority of the item. Higher values indicate higher priority.
-            item (any): The item to be pushed onto the stack.
+            item (any): The item to be pushed onto the queue.
         """
         # Negate priority because heapq is a min-heap (higher priority first)
         # Negate counter so newer items come out first when priorities are equal
-        # Changed to make it more queue like. For stack behaviour, make counter negative
+        # Changed to make it more queue like. For queue behaviour, make counter negative
         heapq.heappush(self.heap, (-priority, self.counter, item))
         self.counter += 1
+    
+    
 
     def pop(self):
-        """ Pop the item with the highest priority from the stack.
+        """ Pop the item with the highest priority from the queue.
 
         Returns:
-            any: The item with the highest priority, or None if the stack is empty.
+            any: The item with the highest priority, or None if the queue is empty.
         """
         if self.heap:
-            return heapq.heappop(self.heap)[-1]
+            return heapq.heappop(self.heap)
         return None
 
     def empty(self):
-        """ Check if the stack is empty.
+        """ Check if the queue is empty.
 
         Returns:
-            bool: True if the stack is empty, False otherwise.
+            bool: True if the queue is empty, False otherwise.
         """
         return not self.heap
     
     def clear(self):
         """
-            Clears the priority stack
+            Clears the priority queue
         """
         self.heap.clear()
         self.counter = 0
