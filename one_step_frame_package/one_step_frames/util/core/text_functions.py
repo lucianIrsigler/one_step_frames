@@ -1,3 +1,4 @@
+from .regexPatterns import OPERATOR_PATTERN,OPERAND_PATTERN
 import re
 
 # Operator/operand functonality
@@ -21,7 +22,7 @@ operator_map = {
 }
 
 def checkOperand(token:str)->bool:
-    return bool(re.fullmatch(r"[a-hj-zA-HJ-Z](?:_\d+)?", token))
+    return bool(re.fullmatch(OPERAND_PATTERN, token))
 
 
 def checkOperator(token: str) -> bool:
@@ -33,7 +34,7 @@ def checkOperator(token: str) -> bool:
     Returns:
         bool: True if the token is a valid operator, otherwise False.
     """
-    return bool(re.fullmatch(r"i|[=><\[\]\#\$\@\%\~\*\!\^|&]", token))
+    return bool(re.fullmatch(OPERATOR_PATTERN, token))
 
 
 

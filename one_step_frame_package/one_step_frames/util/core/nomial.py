@@ -1,5 +1,6 @@
 import re
-
+import copy
+from .regexPatterns import NOMINAL_PATTERN,NOMINAL_PATTERN_STRICT
 
 class Nominal:
     """A class to manage nominals for modal logic."""
@@ -53,9 +54,14 @@ class Nominal:
 
 
 def checkNominal(string:str):
-    return bool(re.fullmatch(r"\b[uwv](?:_\d+)?\b",string))
+    # return bool(re.fullmatch(r"\b[uwv](?:_\d+)?\b",string))
+    return bool(re.fullmatch(NOMINAL_PATTERN,string))
 
 
 def getNominals(string:str):
-    matches = re.findall(r"\b[uwv](?:_\d+)?\b", string)
+    matches = re.findall(NOMINAL_PATTERN, string)
+    return matches
+
+def getNominalsStrictly(string:str):
+    matches = re.findall(NOMINAL_PATTERN_STRICT, string)
     return matches

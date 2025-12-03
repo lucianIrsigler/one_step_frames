@@ -1,8 +1,8 @@
 import re
-
+from ..core.regexPatterns import NOMINAL_PATTERN,VARIABLE_PATTERN
 
 def findNominals(string:str):
-    matches = re.findall(r"\b[uwv](?:_\d+)?\b", string)
+    matches = re.findall(NOMINAL_PATTERN, string)
     nominals = set(matches)
     return nominals
 
@@ -15,7 +15,7 @@ def findVariables(formula:str):
         set: A set of variables found in the formula.
     """
     # Matches single lowercase letters that are not 'u', 'v', 'w', or 'i'
-    matches = re.findall(r"[a-hj-tx-z](?:_\d+)?", formula)
+    matches = re.findall(VARIABLE_PATTERN, formula)
     variables = set(matches)
     return variables
 

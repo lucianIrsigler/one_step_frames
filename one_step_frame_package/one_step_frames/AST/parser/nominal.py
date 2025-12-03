@@ -1,6 +1,6 @@
 import string
 import re
-
+from ...util.core.regexPatterns import NOMINAL_PATTERN_STRICT
 
 class Nominal():
     def __init__(self) -> None:
@@ -18,7 +18,7 @@ class Nominal():
         return self._nominals
     
     def _getNominals(self,string:str)->list[str]:
-        matches = re.findall(r"\b[uwv](?:_\d+)?\b", string)
+        matches = re.findall(NOMINAL_PATTERN_STRICT, string)
         return matches
     
     def reset(self):

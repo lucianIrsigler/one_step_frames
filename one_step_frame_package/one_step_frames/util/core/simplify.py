@@ -1,10 +1,12 @@
 import re
 from ..core.nomial import checkNominal,getNominals
 from ..core.text_functions import replaceCharactersNoParen,checkOperator
+from ..core.regexPatterns import EQUALITY_PATTERN,RELATIONS_PATTERN,QUANTIFIERS_PATTERN,SUBSET_RELATION_PATTERN,\
+SUBSET_ARGUMENTS_PATTERN
 from typing import Tuple
 
 def getEqualities(text:str)->list[str]:
-    matches = re.findall(r'\b[uwv]_\d+=\b[uwv]_\d+', text)
+    matches = re.findall(EQUALITY_PATTERN, text)
     return matches
 
 
@@ -14,23 +16,23 @@ def getNumbersFromString(text:str)->list[str]:
 
 
 def getRelations(text:str)->list[str]:
-    matches = re.findall(r'\b[R|f]\([^()]*\)', text)
+    matches = re.findall(RELATIONS_PATTERN, text)
     return matches
 
 
 def getQuantifiers(text:str)->list[str]:
-    matches = re.findall(r'\b[F|E]\([^()]*\)', text)
+    matches = re.findall(QUANTIFIERS_PATTERN, text)
     return matches
 
 
 def getSubsetRelationSimplify(text:str)->list[str]:
-    pattern = r'R\([^,]+,(\w+)\)\[R\([^,]+,\1\)'
+    pattern = SUBSET_RELATION_PATTERN
     matches = [m.group(0) for m in re.finditer(pattern, text)]
     return matches
 
 
 def extractSubsetArguements(text:str)->list[str]:
-    pattern = r'R\(([^,]+),(\w+)\)\[R\(([^,]+),\2\)'
+    pattern = SUBSET_ARGUMENTS_PATTERN
     output = []
     for match in re.finditer(pattern, text):
         a = match.group(1)

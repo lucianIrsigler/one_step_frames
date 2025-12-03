@@ -1,6 +1,6 @@
 import re
 from .nominal import Nominal
-
+from ...util.core.regexPatterns import OPERAND_PATTERN,OPERATOR_PATTERN
 nominalManager = Nominal()
 
 # Encodes the operators to a 1 character representation
@@ -67,8 +67,8 @@ precedence_map = {
 }
 
 regexPatterns={
-    "OPERATOR": r"i|[=><\[\]\#\$\@\%\~\*\!\^|&|,]",  # i operator alone first
-    "OPERAND": r"[a-hj-zA-HJ-Z](?:_\d+)?",                  # operands single letter excluding 'i'
+    "OPERATOR": OPERATOR_PATTERN,  # i operator alone first
+    "OPERAND": OPERAND_PATTERN,                  # operands single letter excluding 'i'
     "PAREN": r"[()]",
     "SKIP": r"\s+",
     "MISMATCH": r"."
