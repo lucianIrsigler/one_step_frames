@@ -37,7 +37,7 @@ def processFormulaWithAST(formula: str) -> list[str]:
     return infixStrings
 
 
-def inferenceRules(formula: str) -> tuple[dict[str, list[str]], dict[str, dict[str, str]]]:
+def inferenceRules(formula: str,currentFormula:str) -> tuple[dict[str, list[str]], dict[str, dict[str, str]]]:
     """
     Get all inference rules for a given formula.
 
@@ -48,6 +48,8 @@ def inferenceRules(formula: str) -> tuple[dict[str, list[str]], dict[str, dict[s
 
     Args:
         formula (str): The formula to process.
+        currentFormula (str): The whole formula to process. Used to track nominals
+
 
     Returns:
         A tuple containing:
@@ -58,7 +60,7 @@ def inferenceRules(formula: str) -> tuple[dict[str, list[str]], dict[str, dict[s
     """
 
     formulae = processFormulaWithAST(formula)
-    inferenceEngignes = [NominalInference(),AdjunctionInference()]
+    inferenceEngignes = [NominalInference(currentFormula),AdjunctionInference()]
     resultDict = {i:[] for i in formulae}
     trackRules = {i:{} for i in formulae}
 

@@ -54,8 +54,14 @@ def repeated_boxes(n,k):
 def minimum_rules_repeated_boxes(n,k):
     return 2*n+2*k-1
 
+
 def minimum_rules_single_diamond_repeated_boxes(n,k):
     return 2*n+2*k+3
+
+
+def minimum_rules_repeated_diamond_repeated_boxes(n,k,m,l):
+    return 2*n+2*m+2*k+2*l-3
+
 
 def repeated_boxes_solution(n,k):
     boxes = "i*(#"*(k-1)
@@ -91,7 +97,7 @@ def single_diamond_repeated_boxes_solution(n,k):
     diamonds = "@'i("*(n)
     leftBrackets = ")"*(k+n-1)
 
-    output = f"w_0<@v_1=>w_0<#{boxes}i*(@{diamonds}v_1{leftBrackets})"
+    output = f"w_0<@v_0=>w_0<#{boxes}i*(@{diamonds}v_0{leftBrackets})"
     return output
 
 
@@ -103,7 +109,6 @@ def repeated_diamonds_and_boxes(m,n,k,l):
 
     #Since range is exclusive, need to go to n+m-1 instead of n-m-2
     for i in range(n,n+m-1):
-        print(i)
         gamma += f"x_{i+1}->@x_{i},"
     
     gamma = gamma.replace("x_0","p")
@@ -136,7 +141,26 @@ def repeated_diamonds_and_boxes(m,n,k,l):
     return premise + "/" + delta
 
 def repeated_diamonds_and_boxes_solution(m,n,k,l):
-    pass
+    gamma = []
+    delta = ""
+
+    gamma.append("w_0<@v_0")
+
+    for i in range(m-1):
+        gamma.append(f"i(v_{i})<@v_{i+1}")
+
+    boxes_k = "i*(#"*(k-1)
+    diamonds_l = "i*(@"*(l)
+    diamonds_n = "@'i("*(n)
+    leftBrackets = ")"*(k+n+l-1)
+
+
+    delta = f"w_0<#{boxes_k}{diamonds_l}{diamonds_n}v_{m-1}{leftBrackets}"
+    
+    output = f"{",".join(gamma)}=>{delta}"
+
+    return output
+
 
 
 def generateTests(maxN, maxK, maxM=0, maxL=0, algorithm=0):

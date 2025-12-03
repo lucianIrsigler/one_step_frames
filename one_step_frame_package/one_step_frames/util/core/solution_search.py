@@ -2,6 +2,7 @@ from .priority_queue import PriorityQueue
 from ..rules.inference_rules import inferenceRules
 from ..rules.ackermann_rules import findVariables,applyAckermannRule,ackermannHeuristic
 
+
 def goalTest(formula:str)->bool:
     return len(findVariables(formula))==0
 
@@ -9,7 +10,7 @@ def goalTest(formula:str)->bool:
 def getRules(currentFormula:str, formula:str,numVariables:int,delta=False):
     output = []
 
-    currentInferenceRules,trackingRules = inferenceRules(formula)
+    currentInferenceRules,trackingRules = inferenceRules(formula,currentFormula)
 
     for subform in currentInferenceRules.keys():
         for replacement in currentInferenceRules[subform]:
@@ -40,14 +41,22 @@ def updateRulesLogs(tracking,currentFormula,form,trackRules):
             trackRules[tempFormula] = v
 
 
-
-def applyInferenceRules(formulae,currentFormula,numberVariables,trackRules):
+def applyInferenceRules(formulae,currentFormula,numberVariables,trackRules,isDelta=False):
     newRules = []
     for i,j in enumerate(formulae):
-        rulesWithScores,tracking = getRules(currentFormula,j,numberVariables)
+        rulesWithScores,tracking = getRules(currentFormula,j,numberVariables,isDelta)
 
         for k in rulesWithScores:
-            replacedFormula = currentFormula.replace(j,k[1])
+            replacedFormula = currentFormula
+
+            if isDelta and k[1].find("=>")!=-1 and replacedFormula.find("=>")!=-1:
+                replacedFormula = replacedFormula.replace("=>",",")
+            
+            # TODO: Limit delta rules to only nominal
+            if isDelta and tracking[j][k[1]].find("N")==-1:
+                continue
+
+            replacedFormula = replacedFormula.replace(j,k[1])
             newRules.append((k[0],replacedFormula))
 
         updateRulesLogs(tracking,currentFormula,j,trackRules)
@@ -164,7 +173,7 @@ def greedyFirstSearch(formula: str) -> tuple[list[str], list[str], dict[str,str]
             pq.push(*i)
         
         #Apply rules to delta
-        rules = applyInferenceRules(delta,currentFormula,len(variables),trackRules)
+        rules = applyInferenceRules(delta,currentFormula,len(variables),trackRules,True)
 
         for i in rules:
             pq.push(*i)

@@ -22,7 +22,8 @@ operatorTranslations={
     "<":"[z",
 
     #TODO might need to change
-    ">":"[z"
+    ">":"[z",
+    ",":"&"
 }
 
 

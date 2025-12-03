@@ -1,5 +1,6 @@
 import re
-
+import copy
+from .regexPatterns import NOMINAL_PATTERN,NOMINAL_PATTERN_STRICT
 
 class Nominal:
     """A class to manage nominals for modal logic."""
@@ -50,12 +51,22 @@ class Nominal:
     def __str__(self):
         return f"Nominal(nominal_dict={self.nominal_dict})"
 
+    def copy(self):
+        """Return a deep copy of this Nominal instance."""
+        new_instance = Nominal()
+        new_instance.nominal_dict = copy.deepcopy(self.nominal_dict)
+        return new_instance
 
 
 def checkNominal(string:str):
-    return bool(re.fullmatch(r"\b[uwv](?:_\d+)?\b",string))
+    # return bool(re.fullmatch(r"\b[uwv](?:_\d+)?\b",string))
+    return bool(re.fullmatch(NOMINAL_PATTERN,string))
 
 
 def getNominals(string:str):
-    matches = re.findall(r"\b[uwv](?:_\d+)?\b", string)
+    matches = re.findall(NOMINAL_PATTERN, string)
+    return matches
+
+def getNominalsStrictly(string:str):
+    matches = re.findall(NOMINAL_PATTERN_STRICT, string)
     return matches

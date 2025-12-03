@@ -3,20 +3,26 @@ from ...AST.core.abstract_syntax_tree import AbstractSyntaxTree
 from ...AST.core.ast_util import getSpecificNodes, toInfix
 from ..core.nomial import checkNominal
 from ..errors.errors import InferenceError
-from ..core.nomial import getNominals
+from ..core.nomial import getNominalsStrictly
 from typing import List, Optional, Union
 
 
 class NominalRules:
     """Collection of nominal inference rules."""
+
+    nominals = []
+
+    @classmethod
+    def reset_nominals(cls):
+        cls.nominals = []
     
     @staticmethod
     def rule_1(phi: str, psi: str) -> Optional[str]:
         """Rule N1: General implication rule"""
         # As long as < is here, it should be doable
-        # TODO nominal it up
-        nominals_w = set(getNominals(phi)).union(set(getNominals(psi)))
+        nominals_w = [i for i in NominalRules.nominals if "w" in i]
         u = f"w_{len(nominals_w)}"
+
         return f"{u}<{phi}=>{u}<{psi}"
     
     @staticmethod
@@ -41,8 +47,7 @@ class NominalRules:
         if len(psi_args) != 2:
             return None
         
-        # TODO or? tf?
-        return f"u<{psi_args[0]}", f"u<{psi_args[1]}"
+        return f"{phi}<{psi_args[0]}", f"{phi}<{psi_args[1]}"
     
     @staticmethod
     def rule_4(phi: str, psi: str) -> Optional[str]:
@@ -66,9 +71,9 @@ class NominalRules:
         if not checkNominal(phi) or "@" not in psi or not re.fullmatch(r"^@.*$", psi):
             return None
         
-        nominals_v = set(getNominals(phi)).union(set(getNominals(psi)))
+        nominals_v = [i for i in NominalRules.nominals if "v" in i]
         v = f"v_{len(nominals_v)}"
-        # TODO nominal it up
+
         return f"{phi}<@{v},{v}<{psi.replace("@","")}"
     
     @staticmethod
@@ -77,8 +82,10 @@ class NominalRules:
         if not checkNominal(phi) or "@'" not in psi or not re.fullmatch(r"^~@.*$", psi):
             return None
         
-        # TODO nominal it up
-        return f"{phi}<@'w,w<{psi}"
+        nominals_w = [i for i in NominalRules.nominals if "w" in i]
+        w = f"w_{len(nominals_w)}"
+        
+        return f"{phi}<@'{w},{w}<{psi}"
     
     @staticmethod
     def rule_8(phi: str, psi: str) -> Optional[str]:
@@ -112,20 +119,27 @@ class NominalRules:
         if not checkNominal(phi) or not re.fullmatch(r"^i\*\([^\)]*\)$", psi):
             return None
         
-        # TODO nominal it up
-        return f"{phi}<i*(w)&w<{psi}"
+        nominals_w = [i for i in NominalRules.nominals if "w" in i]
+        w = f"w_{len(nominals_w)}"
+        
+        return f"{phi}<i*({w})&w<{psi}"
 
 
 class NominalInference:
     """Handler for nominal inference operations."""
     
-    def __init__(self):
+    def __init__(self,formula:str):
         # Dynamically collect all rule methods from NominalRules
         self.rules = [
-            getattr(NominalRules, method_name) 
-            for method_name in sorted(dir(NominalRules))
-            if method_name.startswith('rule_') and callable(getattr(NominalRules, method_name))
+            getattr(NominalRules, name)
+            for name in sorted(
+                (m for m in dir(NominalRules) if m.startswith("rule_")),
+                key=lambda x: int(x.split("_")[1])
+            )
         ]
+
+        NominalRules.reset_nominals()
+        NominalRules.nominals = list(set(getNominalsStrictly(formula)))
     
     def parse_formula(self, formula: str) -> tuple[str, str]:
         """Parse formula into phi and psi components."""
