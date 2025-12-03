@@ -51,6 +51,11 @@ class Nominal:
     def __str__(self):
         return f"Nominal(nominal_dict={self.nominal_dict})"
 
+    def copy(self):
+        """Return a deep copy of this Nominal instance."""
+        new_instance = Nominal()
+        new_instance.nominal_dict = copy.deepcopy(self.nominal_dict)
+        return new_instance
 
 
 def checkNominal(string:str):

@@ -2,6 +2,7 @@ from .priority_queue import PriorityQueue
 from ..rules.inference_rules import inferenceRules
 from ..rules.ackermann_rules import findVariables,applyAckermannRule,ackermannHeuristic
 
+
 def goalTest(formula:str)->bool:
     return len(findVariables(formula))==0
 
