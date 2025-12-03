@@ -63,10 +63,11 @@ def ackermannHeuristic(formula:str,subformula:str,totalNumberVariables:int=-1):
     Returns:
         int: The score based on the Ackermann heuristic.
     """
-    checkNumberVariablesElim = totalNumberVariables-len(findVariables(formula))
+    numVariablesFormula = len(findVariables(formula))
+    checkNumberVariablesElim = totalNumberVariables-numVariablesFormula
     numberNominals = len(findNominals(formula))
 
-    baseScore = checkNumberVariablesElim + numberNominals
+    baseScore = checkNumberVariablesElim + numberNominals-3
 
     if (formula.find(subformula)==-1):
         errorMessage = f"{subformula} does not occur in formula {formula}"
@@ -75,9 +76,9 @@ def ackermannHeuristic(formula:str,subformula:str,totalNumberVariables:int=-1):
     
 
     if (formula.find("=>")==-1):
-        return baseScore-3 # -3 since cant apply
+        return baseScore # -3 since cant apply
     
-    score = -3 + baseScore
+    score = baseScore
     variables = findVariables(formula)
     arguments = formula.split("=>")
 
