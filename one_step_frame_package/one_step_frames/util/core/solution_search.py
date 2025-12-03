@@ -9,7 +9,7 @@ def goalTest(formula:str)->bool:
 def getRules(currentFormula:str, formula:str,numVariables:int,delta=False):
     output = []
 
-    currentInferenceRules,trackingRules = inferenceRules(formula)
+    currentInferenceRules,trackingRules = inferenceRules(formula,currentFormula)
 
     for subform in currentInferenceRules.keys():
         for replacement in currentInferenceRules[subform]:
