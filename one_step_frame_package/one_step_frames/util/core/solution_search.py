@@ -41,7 +41,7 @@ def updateRulesLogs(tracking,currentFormula,form,trackRules):
             trackRules[tempFormula] = v
 
 
-def applyInferenceRules(formulae,currentFormula,numberVariables,trackRules,isDelta=False):
+def applyInferenceRules(formulae:list,currentFormula,numberVariables,trackRules,isDelta=False):
     newRules = []
     for i,j in enumerate(formulae):
         rulesWithScores,tracking = getRules(currentFormula,j,numberVariables,isDelta)
