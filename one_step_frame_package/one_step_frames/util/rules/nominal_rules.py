@@ -43,7 +43,7 @@ class NominalRules:
         if "|" not in psi or not checkNominal(phi):
             return None
         
-        psi_args = psi.split("^")  # Note: This might be a bug in original - should it be "|"?
+        psi_args = psi.split("|")  # Note: This might be a bug in original - should it be "|"?
         if len(psi_args) != 2:
             return None
         

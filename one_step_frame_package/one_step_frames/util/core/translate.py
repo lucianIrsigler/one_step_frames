@@ -1,31 +1,9 @@
 from .nomial import Nominal,getNominals
 from .translate_util import replaceNominals,cleanUp
-from .text_functions import checkOperand,replaceCharacters
+from .text_functions import checkOperand,replaceCharacters,operatorTranslations
 
 
 nominalManager = Nominal()
-
-operatorTranslations={
-    # F is for all, E is for exists, R is for relation, f is for function
-    # x is old, y is new, z is the rest of form
-
-    "#":"F(y)(R(x,y)[z)",
-    "$":"F(y)(R(y,x)[z)",
-
-    "@":"E(y)(R(x,y)^z)",
-    "%":"E(y)(R(y,x)^z)",
-
-    "*":"E(y)(f(y)=x&z)",
-    "i":"F(y)(y=f(x)[z)",
-
-    "u":"x=yz",
-    "<":"[z",
-
-    #TODO might need to change
-    ">":"[z",
-    ",":"&"
-}
-
 
 #Take it like this, if #xy, then put symbol as "#", and "xy" as formula
 def translateSymbol(symbol:str,formula:str,lastVariable:str)->tuple[str,str]:

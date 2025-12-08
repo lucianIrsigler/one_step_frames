@@ -29,7 +29,7 @@ def parseRule(rule:str)->str:
 
 # List of valid characters
 validCharacters = ["#","@","->","<->","#'","@'","&",
-                   "|","~","0","1","/","<=","&'","=>",",","<'"]
+                "|","~","0","1","/","<=","&'","=>",",","<'",";"]
 
 
 def checkIfNoTextAfterCharacter(string:str,character:str)->bool:
