@@ -1,6 +1,6 @@
 import re
 from ...AST.core.abstract_syntax_tree import AbstractSyntaxTree
-from ...AST.core.ast_util import getLeafNodes,toInfix
+from ...AST.core.ast_util import toInfix,getLeafPaths
 
 modalOperators = ["#","@","#'","@'"]
 #TODO add <-> if needed
@@ -137,17 +137,20 @@ def initFormula(subformula:str)->str:
     if (ast.root is None):
         return subformula
     
-    leafAndParents = getLeafNodes(ast.root,None,[])
+    leafAndParents = getLeafPaths(ast.root)
+
     for i in leafAndParents:
-        if i[1]==None:
-            #Must be root
-            parentValue = ""
-        else:
-            parentValue = i[1].value
-        
-        childValue = i[0].value
-        if (parentValue not in modalOperators):
-            res = initAtomicFormula(childValue)
-            i[0].value = res
+        leaf = i[0]
+        path = i[1]
+
+        shouldInit = True
+
+        for j in path:
+            if j.value in modalOperators:
+                shouldInit = False
+
+        if shouldInit:
+            res = initAtomicFormula(leaf.value)
+            leaf.value = res
 
     return toInfix(ast.root)

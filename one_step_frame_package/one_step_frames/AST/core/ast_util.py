@@ -37,6 +37,47 @@ def getLeafNodes(node:Node,parent=None,result=None):
     return result
 
 
+def getLeafPaths(node: Node, path=None, result=None):
+    """
+    Return all leaf nodes and the FULL path to each leaf.
+
+    Output format:
+        [(leaf_node, [root, ..., parent, leaf_node])]
+    """
+    if result is None:
+        result = []
+    if path is None:
+        path = []
+
+    if node is None:
+        return result
+
+    new_path = path + [node]
+
+    # Case 1 — leaf node (arity 0 OR unary with no child)
+    is_leaf = (
+        node.arity == 0 or
+        (node.arity == 1 and node.child is None) or
+        (node.arity == 2 and node.left is None and node.right is None)
+    )
+
+    if is_leaf:
+        result.append((node, new_path))
+        return result
+
+    # Case 2 — recurse children
+    if node.arity == 1 and node.child is not None:
+        getLeafPaths(node.child, new_path, result)
+
+    elif node.arity == 2:
+        if node.left is not None:
+            getLeafPaths(node.left, new_path, result)
+        if node.right is not None:
+            getLeafPaths(node.right, new_path, result)
+
+    return result
+
+
 def getSpecificNodes(node:Node,searchValue:str="",result=None,):
     """Get all nodes in the AST that match a specific value.
     This function traverses the AST and collects all nodes that have a value matching
