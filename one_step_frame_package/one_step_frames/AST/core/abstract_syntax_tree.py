@@ -4,13 +4,16 @@ from ..errors.ast_error import ASTError
 
 # Default operators for the Abstract Syntax Tree
 defaultOperators = operators = [
+    AbstractOperator("=",2,4),
+
     # perf 2
-    AbstractOperator("=>",2,2),
-    AbstractOperator(",",2,2),
+    AbstractOperator("=>",2,3),
+    AbstractOperator("?",2,3),
+    AbstractOperator(",",2,3),
 
     # perf 1
-    AbstractOperator("<",2,1),
-    AbstractOperator("<'",2,1),
+    AbstractOperator("<",2,2),
+    AbstractOperator("<'",2,2),
 
     #perf 0
     AbstractOperator("#",1),

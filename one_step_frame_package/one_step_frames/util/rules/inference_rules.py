@@ -29,8 +29,9 @@ def processFormulaWithAST(formula: str) -> list[str]:
         raise InferenceError("Failed to build AST from formula")
     
     nodes = getSpecificNodes(tree.root, "<")
-    if not nodes:
-        raise InferenceError("No '<' nodes found in AST")
+
+    if not nodes or tree.root.value!="<":
+        return []
     
     infixStrings = [toInfix(i) for i in nodes]
 
@@ -75,8 +76,3 @@ def inferenceRules(formula: str,currentFormula:str) -> tuple[dict[str, list[str]
             resultDict[form].extend(availableInferenceRules)
     
     return (resultDict,trackRules)
-
-
-if __name__=="__main__":
-    formula = "#x<i(y)=>#x<#y"
-    inferenceRules(formula)

@@ -174,7 +174,7 @@ def checkAckermannConditions(formula: str, subformula: str) -> tuple[bool, int, 
     arguments = formula.split("=>")
 
     gamma = arguments[0].split(",")
-    delta = arguments[1]
+    delta = arguments[1].split("|")
 
     subformula_args = subformula.split("<")
 
@@ -205,8 +205,9 @@ def checkAckermannConditions(formula: str, subformula: str) -> tuple[bool, int, 
             canApply = False
         
         # +1 if x is negative/not there in delta
-        if not checkPolarity(delta,currentVariable)!= True:
-            canApply = False
+        for j in delta:
+            if not checkPolarity(j,currentVariable)!= True:
+                canApply = False
 
         ackRule = 0 if canApply else -1
     # ackermann 2
@@ -234,8 +235,9 @@ def checkAckermannConditions(formula: str, subformula: str) -> tuple[bool, int, 
             canApply = False
         
         # +1 if x is postive/not there in delta
-        if not checkPolarity(delta,currentVariable)!= False:
-            canApply = False
+        for j in delta:
+            if not checkPolarity(j,currentVariable)!= False:
+                canApply = False
 
         ackRule = 1 if canApply else -1
     
@@ -282,10 +284,13 @@ def applyAckermannRule(formula:str,subformula:str)->tuple[str, str]:
 
     phi = gamma[idx].split("<")[rule]
 
-    gamma = [re.sub(rf"\b{var}(?!\d)", phi, j) for i,j in enumerate(gamma) if i!=idx]
+    gamma = [re.sub(rf"\b{var}(?!\w)", phi, j) for i,j in enumerate(gamma) if i!=idx]
     # gamma = [j.replace(var,phi) for i,j in enumerate(gamma) if i!=idx]
 
     # delta = delta.replace(var,phi)
-    delta = re.sub(rf"\b{var}(?!\d)", phi, delta)
+    vars = findVariables(delta)
 
+    if var in vars:
+        delta = re.sub(rf"\b{var}\b", phi, delta)
+    
     return f"{",".join(gamma)}=>{delta}",var

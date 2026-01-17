@@ -1,6 +1,27 @@
 from .regexPatterns import OPERATOR_PATTERN,OPERAND_PATTERN
 import re
 
+operatorTranslations={
+    # F is for all, E is for exists, R is for relation, f is for function
+    # x is old, y is new, z is the rest of form
+
+    "#":"F(y)(R(x,y)[z)",
+    "$":"F(y)(R(y,x)[z)",
+
+    "@":"E(y)(R(x,y)^z)",
+    "%":"E(y)(R(y,x)^z)",
+
+    "*":"E(y)(f(y)=x&z)",
+    "i":"F(y)(y=f(x)[z)",
+
+    "u":"x=yz",
+    "<":"[z",
+
+    #TODO might need to change
+    ">":"[z",
+    ",":"&",
+    "|":"|"
+}
 # Operator/operand functonality
 operator_map = {
     "<->": "+",
@@ -18,6 +39,7 @@ operator_map = {
     "i": "i",
     "^": "&", #TODO might need to change back in case it breaks stuff
     "|": "|",
+    ";": ";",
     "&": "&"
 }
 

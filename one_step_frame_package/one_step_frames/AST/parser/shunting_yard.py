@@ -20,6 +20,7 @@ operator_map = {
     "i": "i",
     "^": "^",
     "|": "|",
+    ";":";",
     "&": "&"
 }
 
@@ -31,6 +32,7 @@ associativity_map = {
     "=": "L",   
     "<": "L",
     "[": "L",   
+    "?": "L",   
     "#": "R",
     "$": "R",   
     "@": "R",
@@ -41,6 +43,7 @@ associativity_map = {
     "i": "R",
     "^": "R",
     "|": "L",
+    ";": "L",
     "&": "L",
     "]": "L",
     ",": "L"
@@ -48,12 +51,14 @@ associativity_map = {
 
 precedence_map = {
     ">": 1,    
-    "=": 1,
-    ",": 2,  
-    "|": 2,
+    ",": 2,
+    ";":2, 
     "&": 2,
     "<": 3,
     "[": 3, 
+    "?": 3, 
+    "=": 4,
+    "|": 4,
     "^": 4,
     "]": 4,
     "#": 6,
@@ -68,7 +73,7 @@ precedence_map = {
 
 regexPatterns={
     "OPERATOR": OPERATOR_PATTERN,  # i operator alone first
-    "OPERAND": OPERAND_PATTERN,                  # operands single letter excluding 'i'
+    "OPERAND": OPERAND_PATTERN,    # operands single letter excluding 'i'
     "PAREN": r"[()]",
     "SKIP": r"\s+",
     "MISMATCH": r"."
