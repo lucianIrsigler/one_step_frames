@@ -1,7 +1,8 @@
 from .nomial import Nominal,getNominals
 from .translate_util import replaceNominals,cleanUp
 from .text_functions import checkOperand,replaceCharacters,operatorTranslations
-
+from ...util.core.regexPatterns import OPERAND_PATTERN,OPERATOR_PATTERN,NOMINAL_PATTERN
+import re
 
 nominalManager = Nominal()
 
@@ -40,13 +41,13 @@ def translateSymbol(symbol:str,formula:str,lastVariable:str)->tuple[str,str]:
 
     if lastVariable=="":
         #First time doing this
-        tempFormula = replaceNominals(symbol + formula,reverse=True)
-        nominalsInForm = getNominals(tempFormula)
+        # tempFormula = replaceNominals(symbol + formula,reverse=True)
+        nominalsInForm = getNominals(symbol+formula)
 
-        #TODO make dynamic?
         if ("w_0" in nominalsInForm):
             lastVariable = nominalManager.get_nominal("w")
             nextVariable = nominalManager.get_nominal("w")
+
     elif "w" in lastVariable or "v" in lastVariable:
         if isOperand:
             nextVariable = replaceNominals(symbol, reverse=True)
@@ -81,10 +82,21 @@ def translateCondition(formula:str, ruleOrder:dict[str,str])->str:
     """
     nominalManager.reset()
 
-    formula = replaceNominals(formula)
-    formula = replaceCharacters(formula)
+    # formula = replaceNominals(formula)
 
-    symbols = list(formula)
+    TOKEN_PATTERN = re.compile(
+        rf"""
+        {NOMINAL_PATTERN} |
+        {OPERAND_PATTERN} |
+        {OPERATOR_PATTERN} |
+        [()]                  # parentheses
+        """,
+        re.VERBOSE
+    )
+    
+    formula = replaceCharacters(formula)
+    symbols = TOKEN_PATTERN.findall(formula)
+    
     runningTranslations = {}
 
     lastTranslation = None
@@ -92,8 +104,14 @@ def translateCondition(formula:str, ruleOrder:dict[str,str])->str:
 
     lastVariable = ""
 
+    lastIndex = 0
+
     for i,j in enumerate(symbols):
-        translation,lastVariable = translateSymbol(j,formula[i+1:],lastVariable)
+        goingFrom = len(j)
+        subForm = formula[lastIndex+goingFrom:]
+        lastIndex += goingFrom
+
+        translation,lastVariable = translateSymbol(j,subForm,lastVariable)
 
         if lastTranslation!=None:
             key = "{"+lastTranslation+"}"
@@ -101,7 +119,7 @@ def translateCondition(formula:str, ruleOrder:dict[str,str])->str:
         else:
             base = translation
 
-        lastTranslation = formula[i+1:]
+        lastTranslation = formula[lastIndex:]
 
     
     for k,v in runningTranslations.items():
@@ -121,11 +139,3 @@ def translateCondition(formula:str, ruleOrder:dict[str,str])->str:
         base = f"{i}({base})"
 
     return base
-
-
-# if __name__ == "__main__":
-#     formula = "w_0<#*#@'w_0"
-#     # formula = "w_0<i@'w_0"
-#     # formula = "w_0<#@'i@'w_0"
-#     res = translateCondition(formula)
-#     print(res)

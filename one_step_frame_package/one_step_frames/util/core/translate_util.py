@@ -54,5 +54,5 @@ def replaceNominals(formula:str,nominalToSymbol:dict=generateMapping(),reverse:b
 
 def cleanUp(formula):
     formula = replaceCharacters(formula,True)
-    formula = replaceNominals(formula,reverse=True)
+    # formula = replaceNominals(formula,reverse=True)
     return formula.replace("{}","")
