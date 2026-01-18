@@ -56,18 +56,23 @@ def getLowerNominals(text:str)->str:
         
     validNominals = ["w","v"]
 
-    for nom in validNominals:
-        if ((nom in nominals[0] and nom not in nominals[1]) or
-            (nom in nominals[1] and nom not in nominals[0])):
-            raise ValueError(f"Mismatched nominals:{nominals[0]},{nominals[1]}")
-    
-    firstNomNumber = getNumbersFromString(nominals[0])
-    secondNomNumber = getNumbersFromString(nominals[1])
+    isSame = False
 
-    if (firstNomNumber>secondNomNumber):
-        return nominals[1]
+    for nom in validNominals:
+        if nom in nominals[0] and nom in nominals[1]:
+            isSame = True
+    
+    
+    if isSame:
+        firstNomNumber = getNumbersFromString(nominals[0])
+        secondNomNumber = getNumbersFromString(nominals[1])
+
+        if (firstNomNumber>secondNomNumber):
+            return nominals[1]
+        else:
+            return nominals[0]
     else:
-        return nominals[0]
+        return nominals[0] if "w" in nominals[0] else nominals[1]
 
 
 def getSubstitutions(equations:list[str])->dict:

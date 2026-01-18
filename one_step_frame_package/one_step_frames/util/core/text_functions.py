@@ -12,7 +12,7 @@ operatorTranslations={
     "%":"E(y)(R(y,x)^z)",
 
     "*":"E(y)(f(y)=x&z)",
-    "i":"F(y)(y=f(x)[z)",
+    "i":"F(y)(y=f(x)^z)",
 
     "u":"x=yz",
     "<":"[z",
@@ -22,6 +22,7 @@ operatorTranslations={
     ",":"&",
     "|":"|"
 }
+
 # Operator/operand functonality
 operator_map = {
     "<->": "+",
