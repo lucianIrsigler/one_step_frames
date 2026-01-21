@@ -1,7 +1,8 @@
 from .nomial import Nominal,getNominals
 from .translate_util import replaceNominals,cleanUp
-from .text_functions import checkOperand,replaceCharacters,operatorTranslations
-
+from .text_functions import checkOperand,replaceCharacters,operatorTranslations,checkNominal
+from .regexPatterns import NOMINAL_PATTERN
+import re
 
 nominalManager = Nominal()
 
@@ -24,7 +25,9 @@ def translateSymbol(symbol:str,formula:str,lastVariable:str)->tuple[str,str]:
     """
     
     # If not operator or operand
-    if symbol not in operatorTranslations.keys() and not checkOperand(symbol):
+    if symbol not in operatorTranslations.keys() \
+        and not checkOperand(symbol) \
+        and not checkNominal(symbol):
         raise KeyError("Key not found:",symbol)
     
     isOperand = checkOperand(symbol)
@@ -63,6 +66,22 @@ def translateSymbol(symbol:str,formula:str,lastVariable:str)->tuple[str,str]:
     return temp,lastVariable
 
 
+def find_all_indices(main_string, substring):
+    indices = []
+    start_index = 0
+    while True:
+        try:
+            # Find the next occurrence starting from start_index
+            index = main_string.index(substring, start_index)
+            indices.append(index)
+            # Update start_index to search from the position right after the found occurrence
+            start_index = index + 1
+        except ValueError:
+            # If the substring is not found, a ValueError is raised, breaking the loop
+            break
+    return indices
+
+
 def translateCondition(formula:str, ruleOrder:dict[str,str])->str:
     """Translate a formula into a one-step condition by replacing nominals and 
     characters with their corresponding translations. It works by iterating through the
@@ -81,10 +100,22 @@ def translateCondition(formula:str, ruleOrder:dict[str,str])->str:
     """
     nominalManager.reset()
 
-    formula = replaceNominals(formula)
     formula = replaceCharacters(formula)
 
+    #match nominals first
+    nominals = re.findall(NOMINAL_PATTERN,formula)
+    indices = {}
+
+    for i in set(nominals):
+        indices[i] = find_all_indices(formula,i)
+        formula = formula.replace(i,"")
+
     symbols = list(formula)
+
+    for i,j in indices.items():
+        for k in j:
+            symbols.insert(k,i)
+    
     runningTranslations = {}
 
     lastTranslation = None

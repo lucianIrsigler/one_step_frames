@@ -1,4 +1,4 @@
-from .regexPatterns import OPERATOR_PATTERN,OPERAND_PATTERN
+from .regexPatterns import OPERATOR_PATTERN,OPERAND_PATTERN,NOMINAL_PATTERN
 import re
 
 operatorTranslations={
@@ -45,6 +45,10 @@ operator_map = {
 
 def checkOperand(token:str)->bool:
     return bool(re.fullmatch(OPERAND_PATTERN, token))
+
+
+def checkNominal(token:str)->bool:
+    return bool(re.fullmatch(NOMINAL_PATTERN, token))
 
 
 def checkOperator(token: str) -> bool:
