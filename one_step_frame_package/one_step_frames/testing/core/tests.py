@@ -9,15 +9,11 @@ def runTests(algorithm:Callable[..., object]):
         solution = i[1]
         assert(output==solution)
 
-    print("Test paper formulae passed")
-
     for i in testing.edgeCases():
         output = algorithm(i[0])[0][-1]
         solution = i[1]
         assert(output==solution)
     
-    print("Edge cases passed")
-
     tuples = [(randint(2, 15), randint(2, 15), randint(2, 15), randint(2, 15)) for _ in range(6)]
 
     for i in tuples:
@@ -49,9 +45,8 @@ def runTests(algorithm:Callable[..., object]):
 
         assert(algStringRecon==solStringRecon)
 
-    
-    print("PASSED ALL")
-
+    print("Passed all tests")
+    return True
 
 #Pass in getLogs
 def testAlgorithmExpansion(algorithm:Callable[..., object],verbose:bool=False):

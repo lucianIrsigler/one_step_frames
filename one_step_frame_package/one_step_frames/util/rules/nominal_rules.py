@@ -146,7 +146,8 @@ class NominalInference:
         if "<" not in formula:
             raise InferenceError("Unable to find '<' operator")
         
-        parts = formula.split("<")
+        parts = formula.split("<",1)
+        # parts = formula.split("<")
         if len(parts) != 2:
             raise InferenceError(f"Invalid formula format. Expected 2 parts, got {len(parts)}")
         

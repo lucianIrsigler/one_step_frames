@@ -58,11 +58,12 @@ class AdjunctionInference:
         if "<" not in formula:
             raise InferenceError("Unable to find '<' operator")
         
-        parts = formula.split("<")
-        if len(parts) != 2:
-            raise InferenceError(f"Invalid formula format. Expected 2 parts, got {len(parts)}")
-        
-        return parts[0], parts[1]
+        ast = AbstractSyntaxTree()
+        ast.buildTree(formula)
+        res = ast.root
+        res_right = toInfix(res.right)
+        res_left = toInfix(res.left)
+        return res_left, res_right
     
     def _get_applicable_rules(self, phi: str, psi: str) -> List[str]:
         """Gets all adjunction rules avaiable with current values."""

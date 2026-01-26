@@ -19,3 +19,4 @@ def getLogs(rule:str):
     formula = initFormula(rule)
     result = greedyFirstSearch(formula)
     return result
+

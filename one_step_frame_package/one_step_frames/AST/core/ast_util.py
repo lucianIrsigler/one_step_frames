@@ -115,7 +115,7 @@ def getSpecificNodes(node:Node,searchValue:str="",result=None,):
     return result
 
 
-def toInfix(node:Node) -> str:
+def toInfix(node:Node,is_root:bool=True) -> str:
     """Convert an AST node to its infix string representation.
     This function recursively converts an AST node to its infix notation.
     It handles nodes with different arities (0, 1, or 2) and formats the output accordingly.
@@ -142,7 +142,7 @@ def toInfix(node:Node) -> str:
     elif node.arity == 1:
         if node.child is None:
             return ""
-        child_expr = toInfix(node.child)
+        child_expr = toInfix(node.child,False)
         
         # Check if child is a binary operator (needs parentheses)
         if node.child.arity == 2 or node.value in ["i", "i*", "i!"]:
@@ -155,9 +155,15 @@ def toInfix(node:Node) -> str:
         if node.left is None or node.right is None:
             return ""
         
-        left_expr = toInfix(node.left)
-        right_expr = toInfix(node.right)
+        left_expr = toInfix(node.left,False)
+        right_expr = toInfix(node.right,False)
         
+        if (is_root and node.left.value==node.value):
+            left_expr = f"({left_expr})"
+        
+        if (is_root and node.right.value==node.value):
+            right_expr = f"({right_expr})"
+
         return f"{left_expr}{node.value}{right_expr}"
 
     else:
