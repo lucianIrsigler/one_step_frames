@@ -9,6 +9,7 @@ def findStepFrameCondition(rule:str):
     formula = initFormula(rule)
     result = greedyFirstSearch(formula)
     finalForm = result[0][-1]
+    print(finalForm)
     result = translateCondition(finalForm,result[2])
     result = simplifyConditon(result)
     return result

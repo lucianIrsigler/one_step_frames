@@ -40,7 +40,7 @@ def checkPolarity(formula:str,variable:str)->bool|None:
     if (len(splitParts)!=2):
         return None
 
-    if variable in findVariables(splitParts[0]):
+    if variable in findVariables(splitParts[0]) or f"~{variable}" in splitParts[1]:
         return False
     else:
         return True 

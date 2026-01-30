@@ -144,6 +144,10 @@ class NominalInference:
     def parse_formula(self, formula: str) -> tuple[str, str]:
         """Parse formula into phi and psi components."""
         if "<" not in formula:
+            if "=>" not in formula:
+                formula = "1<"+formula
+                return self.parse_formula(formula)
+              
             raise InferenceError("Unable to find '<' operator")
         
         parts = formula.split("<",1)
@@ -181,13 +185,22 @@ class NominalInference:
         return valid_rules
     
     def get_applicable_rules(self,formula:str)->List[str]:
-        phi, psi = self.parse_formula(formula)
+        try:
+            phi, psi = self.parse_formula(formula)
+        except InferenceError as e:
+            print(f"Unable to parse formula for applicable rules: {e}")
+            return []
+        
         return self._get_applicable_rules(phi, psi)
     
     def get_inferences(self, formula: str) -> List[str]:
         """Get all valid nominal inferences for a formula."""
-        phi, psi = self.parse_formula(formula)
-        return self.apply_rules(phi, psi)
+        try:
+            phi, psi = self.parse_formula(formula)
+            return self.apply_rules(phi, psi)
+        except InferenceError as e:
+            print(f"Unable to parse formula for inferences: {e}")
+            return []
     
 
 def process_formula_with_ast(formula: str) -> List[str]:

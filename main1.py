@@ -1,4 +1,4 @@
-from one_step_frame_package.one_step_frames.step_frame_conditions import getLogs,findStepFrameCondition,translateCondition,simplifyConditon
+from one_step_frame_package.one_step_frames.step_frame_conditions import getLogs,findStepFrameCondition,translateCondition,simplifyConditon,greedyFirstSearch
 import time
 import csv
 from one_step_frame_package.one_step_frames.spass.parser import create_SPASS_input
@@ -6,14 +6,15 @@ from one_step_frame_package.one_step_frames.testing.core.tests import runTests
 
 
 def main():
-    # assert(runTests(getLogs)==True)
+    # runTests(getLogs)
     
-    testForm = "/#(p->p_1)->(#p->#p_1|#p_2|#p_3)"
+    # testForm = "/#(p->p_1)->(#p->#p_1|#p_2|#p_3)"
     # testForm = "/#p_1|#(p_1->p_2)"
     # res = findStepFrameCondition(testForm)
-    res = translateCondition("w_0<@'w_1=>w_0<T",{})
-    res = simplifyConditon(res)
-    print(res)
+    # res = greedyFirstSearch("w_0<@~p_1,w_0<@(p_1)=>",True)
+    res = greedyFirstSearch("w_0<@~p_1,w_0<@v_0,v_0<p_1=>",True)
+    # res = simplifyConditon(res)
+    print(res[0][-1])
     
 
 if __name__=="__main__":

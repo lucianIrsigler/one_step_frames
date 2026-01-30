@@ -29,10 +29,13 @@ def processFormulaWithAST(formula: str) -> list[str]:
         raise InferenceError("Failed to build AST from formula")
     
     nodes = getSpecificNodes(tree.root, "<")
+    additonalNodes = getSpecificNodes(tree.root, tree.root.value)
 
-    if not nodes or tree.root.value!="<":
+    if not nodes and not additonalNodes:
         return []
     
+    nodes.extend(additonalNodes)
+
     infixStrings = [toInfix(i) for i in nodes]
 
     return infixStrings
@@ -60,6 +63,9 @@ def inferenceRules(formula: str,currentFormula:str) -> tuple[dict[str, list[str]
                 inference rules are applied to which subformulae.
     """
 
+    if formula.strip()=="" or formula=="_":
+        return ({},{})
+    
     formulae = processFormulaWithAST(formula)
     inferenceEngignes = [NominalInference(currentFormula),AdjunctionInference()]
     resultDict = {i:[] for i in formulae}

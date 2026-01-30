@@ -24,10 +24,14 @@ def getRules(currentFormula:str, formula:str,numVariables:int,delta=False):
             if (tempFormula.count("=>"))>1:
                 continue
             
-            if replacement.count("=>")==1:
-                score = ackermannHeuristic(tempFormula,replacement.split("=>")[0],numVariables)
-            else:
-                score = ackermannHeuristic(tempFormula,replacement,numVariables)
+            try:
+                if replacement.count("=>")==1:
+                    score = ackermannHeuristic(tempFormula,replacement.split("=>")[0],numVariables)
+                else:
+                    score = ackermannHeuristic(tempFormula,replacement,numVariables)
+            except Exception as e:
+                output.append((5,replacement))
+                continue
 
             output.append((score,replacement))
 
@@ -64,7 +68,7 @@ def applyInferenceRules(formulae:list,currentFormula,numberVariables,trackRules,
     return newRules
 
 
-def greedyFirstSearch(formula: str) -> tuple[list[str], list[str], dict[str,str]]:
+def greedyFirstSearch(formula: str, reverse = False) -> tuple[list[str], list[str], dict[str,str]]:
     """Perform a greedy first search on the formula to find a solution.
     A Priority stack is used with the ackermann heuristic 
     to prioritize items.
@@ -78,9 +82,12 @@ def greedyFirstSearch(formula: str) -> tuple[list[str], list[str], dict[str,str]
             - list[str]: Logging information
             - dict[str,str]: The corresponding rules index(Nominal rule 1, adjunction 1 etc)
     """
-    if "=>" not in formula:
+    if "=>" not in formula and not reverse:
         gamma = []
         delta = formula
+    elif "=>" not in formula and reverse:
+        gamma = formula
+        delta = []
     else:
         gamma = formula.split("=>")[0].split(",")
         delta = formula.split("=>")[1]
@@ -167,6 +174,9 @@ def greedyFirstSearch(formula: str) -> tuple[list[str], list[str], dict[str,str]
             continue
         
         #Apply rules to gamma
+        if isinstance(gamma, str):
+            gamma = [gamma]
+            
         rules = applyInferenceRules(gamma,currentFormula,len(variables),trackRules)
 
         for i in rules:
