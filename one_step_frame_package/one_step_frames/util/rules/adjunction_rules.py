@@ -61,6 +61,10 @@ class AdjunctionInference:
         ast = AbstractSyntaxTree()
         ast.buildTree(formula)
         res = ast.root
+
+        if res == None or res.arity != 2 or res.value != "<":
+            return "",""
+        
         res_right = toInfix(res.right)
         res_left = toInfix(res.left)
         return res_left, res_right
