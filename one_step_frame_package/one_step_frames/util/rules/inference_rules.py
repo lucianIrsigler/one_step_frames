@@ -3,9 +3,9 @@ from ...AST.core.ast_util import getSpecificNodes,toInfix
 from ..errors.errors import InferenceError
 from .nominal_rules import NominalInference
 from .adjunction_rules import AdjunctionInference
+from .adapters_handler import ALLOWED_ADAPTERS, run_adapter
 
-
-def processFormulaWithAST(formula: str) -> list[str]:
+def processFormulaWithAST(formula: str,rootOnly:bool=False) -> list[str]:
     """Process a formula using an Abstract Syntax Tree (AST) to extract specific nodes.
     This function builds an AST from the given formula and retrieves all nodes that match
     the specified condition (in this case, nodes with the '<' operator).
@@ -29,7 +29,11 @@ def processFormulaWithAST(formula: str) -> list[str]:
         raise InferenceError("Failed to build AST from formula")
     
     nodes = getSpecificNodes(tree.root, "<")
-    additonalNodes = getSpecificNodes(tree.root, tree.root.value)
+
+    if rootOnly:
+        additonalNodes = [tree.root]
+    else:
+        additonalNodes = getSpecificNodes(tree.root, tree.root.value)
 
     if not nodes and not additonalNodes:
         return []
@@ -41,7 +45,20 @@ def processFormulaWithAST(formula: str) -> list[str]:
     return infixStrings
 
 
-def inferenceRules(formula: str,currentFormula:str) -> tuple[dict[str, list[str]], dict[str, dict[str, str]]]:
+def run_adapters_on_formula(formulae:list[str],formula:str,delta:bool,trackRules,resultDict,adapters=ALLOWED_ADAPTERS)-> None:
+    for i in ALLOWED_ADAPTERS:
+        for j in formulae:
+            additional_inferences = run_adapter(j,i,delta)
+            for k in additional_inferences:
+                if k=="":
+                    continue
+                trackRules[j][k] = "alt_n"
+            resultDict[j].extend(additional_inferences)
+            resultDict.setdefault(formula, []).extend(additional_inferences)
+
+
+
+def inferenceRules(formula: str,currentFormula:str,delta:bool,runAdapters:bool=False) -> tuple[dict[str, list[str]], dict[str, dict[str, str]]]:
     """
     Get all inference rules for a given formula.
 
@@ -65,20 +82,25 @@ def inferenceRules(formula: str,currentFormula:str) -> tuple[dict[str, list[str]
 
     if formula.strip()=="" or formula=="_":
         return ({},{})
-    
-    formulae = processFormulaWithAST(formula)
-    inferenceEngignes = [NominalInference(currentFormula),AdjunctionInference()]
-    resultDict = {i:[] for i in formulae}
-    trackRules = {i:{} for i in formulae}
+    try:
+        formulae = processFormulaWithAST(formula)
+        formulae = list(set(formulae))
+        inferenceEngignes = [NominalInference(currentFormula),AdjunctionInference()]
+        resultDict = {i:[] for i in formulae}
+        trackRules = {i:{} for i in formulae}
+        for engine in inferenceEngignes:
+            for form in resultDict.keys():
+                availableInferenceRules = engine.get_inferences(form)
+                availableRules = engine.get_applicable_rules(form)
+                for i in range(len(availableInferenceRules)):
+                    trackRules[form][availableInferenceRules[i]]=availableRules[i]
 
-    for engine in inferenceEngignes:
-        for form in resultDict.keys():
-            availableInferenceRules = engine.get_inferences(form)
-            availableRules = engine.get_applicable_rules(form)
-
-            for i in range(len(availableInferenceRules)):
-                trackRules[form][availableInferenceRules[i]]=availableRules[i]
-                
-            resultDict[form].extend(availableInferenceRules)
+                resultDict[form].extend(availableInferenceRules)
+    except InferenceError as e:
+        print(f"Inference error: {e}")
+        return ({},{})
     
+    if runAdapters:
+        run_adapters_on_formula(formulae,currentFormula,delta,trackRules,resultDict)
+        
     return (resultDict,trackRules)

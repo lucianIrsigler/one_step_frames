@@ -128,8 +128,14 @@ class AltNRules:
 
                 # #((~p_1|~p_2)|p_3))
                 s_inner = first_arg[1:-1] if first_arg.startswith("(") and first_arg.endswith(")") else first_arg
-
-                premises = re.match(r"~?p_\d+(?:\|~?p_\d+)+",s_inner)[0]
+                
+                
+                premises = re.match(r"~?p_\d+(?:\|~?p_\d+)+",s_inner)
+                
+                if not premises:
+                    return None
+                
+                premises = premises[0]
                 premises = premises.split("|")
 
                 for premise in premises:
@@ -151,7 +157,7 @@ class AltNRules:
         return output[:-1]+operator           
     
     @staticmethod
-    def rule_3(phi: str, psi: str,operator:str) -> Optional[str]:
+    def rule_3(phi: str, psi: str,operator:str) -> list[str]|None:
         formula = phi
         variables = findVariables(formula)
 
@@ -169,7 +175,7 @@ class AltNRules:
             return formulae
 
     @staticmethod
-    def rule_4(phi: str, psi: str,operator:str) -> Optional[str]:
+    def rule_4(phi: str, psi: str,operator:str) -> list[str]|None:
         formula = phi+operator+psi
 
         formulae = []
@@ -184,7 +190,7 @@ class AltNRules:
             return formulae
     
     @staticmethod
-    def rule_5(phi: str, psi: str,operator:str) -> Optional[str]:
+    def rule_5(phi: str, psi: str,operator:str) -> list[str]|None:
         formula = phi+operator+psi
 
         #find all strings like x ^ 1 or 1 ^ x where x can be any string
@@ -205,11 +211,8 @@ class AltNRules:
     def rule_6(phi: str, psi: str,operator:str) -> Optional[str]:
         nominals = findNominals(phi)
 
-        ast = AbstractSyntaxTree()
-        ast.buildTree(psi)
-        # ast.printTree()
         
-        if len(nominals)==0 or checkNominal(phi) is False or psi.find("^")==0:
+        if len(nominals)==0 or checkNominal(phi) is False or phi.find("^")==0:
             return None
         
         PATTERN = r"@~?p_\d+|@\((?:[^()]+|\([^()]*\))*\)"
@@ -243,6 +246,7 @@ class AltNRules:
             return output_string
 
         output_string = phi.split(",")[0]
+        initial_parts = output_string
 
         for i,j in enumerate(formulae):
             outputs = []
@@ -257,6 +261,9 @@ class AltNRules:
             temp_str = ",".join(outputs)
 
             output_string+=f",{temp_str}"
+        
+        if output_string==initial_parts:
+            return None
         
         return output_string
     
@@ -282,6 +289,9 @@ class AltNRules:
             temp_str = f",{temp_str[:-1]}<{target}"
             output_str+=temp_str
 
+        if "=>" not in phi:
+            output_str+="=>"
+            
         return output_str
 
 
@@ -300,6 +310,84 @@ def set_ant_and_cons(rule:str,isDelta:bool)->tuple[str,str]:
     return antecedent, consequent
 
 
+def jump_to_the_end(rule:str,index:int):
+    try:
+        if index == 0:
+            res = AltNRules.rule_2(rule.split("=>")[0], "", "=>")
+            res = AltNRules.rule_3(res.split("=>")[0], "", "=>")
+            res = res[0]
+            res = AltNRules.rule_4(res.split("=>")[0], "", "=>")
+            res = res[0]
+            res = AltNRules.rule_5(res.split("=>")[0], "", "=>")
+            res = res[0]
+            outputs = []
+            res = _prepare_for_rule_6(res.split("=>")[0], outputs)
+            res = outputs[0]
+            res = AltNRules.rule_6(res.split("<")[0], res.split("<")[1], "<")
+            res = AltNRules.rule_7(res.split("=>")[0], "", "")
+            res = AltNRules.rule_8(res.split("=>")[0], "", "")
+            return res
+        elif index == 1:
+            res = AltNRules.rule_3("", rule.split("=>")[1], "=>")
+            res = res[0]
+            res = AltNRules.rule_4("", res, "=>")
+            res = res[0]
+            res = AltNRules.rule_5("", res, "=>")
+            res = res[0]
+            outputs = []
+            res = _prepare_for_rule_6(res, outputs)
+            res = outputs[0]
+            res = AltNRules.rule_6("", res, "<")
+            res = AltNRules.rule_7("", res, "")
+            res = AltNRules.rule_8("", res, "")
+            return res
+        elif index == 2:
+            res = AltNRules.rule_4("", rule, "=>")
+            res = res[0]
+            res = AltNRules.rule_5("", res, "=>")
+            res = res[0]
+            outputs = []
+            res = _prepare_for_rule_6(res, outputs)
+            res = outputs[0]
+            res = AltNRules.rule_6("", res, "<")
+            res = AltNRules.rule_7("", res, "")
+            res = AltNRules.rule_8("", res, "")
+            return res
+        elif index == 3:
+            res = AltNRules.rule_5("", rule, "=>")
+            res = res[0]
+            outputs = []
+            res = _prepare_for_rule_6(res, outputs)
+            res = outputs[0]
+            res = AltNRules.rule_6("", res, "<")
+            res = AltNRules.rule_7("", res, "")
+            res = AltNRules.rule_8("", res, "")
+            return res
+        elif index == 4:
+            outputs = []
+            res = _prepare_for_rule_6(rule, outputs)
+            res = outputs[0]
+            res = AltNRules.rule_6("", res, "<")
+            res = AltNRules.rule_7("", res, "")
+            res = AltNRules.rule_8("", res, "")
+            return res
+        elif index == 5:
+            res = AltNRules.rule_6("", rule, "<")
+            res = AltNRules.rule_7("", res, "")
+            res = AltNRules.rule_8("", res, "")
+            return res
+        elif index == 6:
+            res = AltNRules.rule_7("", rule, "")
+            res = AltNRules.rule_8("", res, "")
+            return res
+        elif index == 7:
+            res = AltNRules.rule_8("", rule, "")
+            return res
+        return None
+    except Exception as e:
+        return None
+    
+
 def _apply_rule_1(rule: str, outputs: list,isDelta:bool=False) -> None:
     """Apply rule 1: Add negation wrapper if needed."""
     try:
@@ -309,6 +397,11 @@ def _apply_rule_1(rule: str, outputs: list,isDelta:bool=False) -> None:
         res = AltNRules.rule_1("", rule, "=>",isDelta)
         if res is not None:
             outputs.append(res)
+
+            output = jump_to_the_end(res,0)
+            if output is not None:
+                outputs.append(output)
+
     except (IndexError, Exception) as e:
         pass
         # print(f"Warning in rule 1: {e}")
@@ -322,6 +415,11 @@ def _apply_rule_2(rule: str, outputs: list,isDelta:bool) -> None:
         res = AltNRules.rule_2(antecedent, consequent, "=>")
         if res is not None:
             outputs.append(res)
+
+            output = jump_to_the_end(res,1)
+            if output is not None:
+                outputs.append(output)
+
     except (ValueError, Exception) as e:
         pass
         # print(f"Warning in rule 2: {e}")
@@ -334,6 +432,10 @@ def _apply_rule_3(rule: str, outputs: list,isDelta:bool) -> None:
         res = AltNRules.rule_3(antecedent, consequent, "=>")
         if res is not None:
             outputs.extend(res)
+
+            output = jump_to_the_end(res,2)
+            if output is not None:
+                outputs.append(output)
     except (ValueError, Exception) as e:
         pass
         # print(f"Warning in rule 3: {e}")
@@ -345,6 +447,10 @@ def _apply_rule_4(rule: str, outputs: list) -> None:
         res = AltNRules.rule_4(rule, "", "")
         if res is not None:
             outputs.extend(res)
+
+            output = jump_to_the_end(res,3)
+            if output is not None:
+                outputs.append(output)
     except Exception as e:
         pass
         # print(f"Warning in rule 4: {e}")
@@ -356,6 +462,10 @@ def _apply_rule_5(rule: str, outputs: list) -> None:
         res = AltNRules.rule_5(rule, "", "")
         if res is not None:
             outputs.extend(res)
+
+            output = jump_to_the_end(res,4)
+            if output is not None:
+                outputs.append(output)
     except Exception as e:
         pass
         # print(f"Warning in rule 5: {e}")
@@ -375,6 +485,11 @@ def _apply_rule_6(rule: str, outputs: list) -> None:
         res = AltNRules.rule_6(antecedent, consequent, "<")
         if res is not None:
             outputs.append(res)
+
+            output = jump_to_the_end(res,5)
+            if output is not None:
+                outputs.append(output)
+        
     except Exception as e:
         pass
         #print(.*)
@@ -391,6 +506,10 @@ def _apply_rule_7(rule: str, outputs: list,isDelta:bool) -> None:
         res = AltNRules.rule_7(antecedent, consequent, "")
         if res is not None:
             outputs.append(res)
+
+            output = jump_to_the_end(res,6)
+            if output is not None:
+                outputs.append(output)
     except (ValueError, Exception) as e:
         pass
         # print(f"Warning in rule 7: {e}")
@@ -408,6 +527,10 @@ def _apply_rule_8(rule: str, outputs: list,isDelta:bool) -> None:
         res = AltNRules.rule_8(antecedent, consequent, "")
         if res is not None:
             outputs.append(res)
+
+            output = jump_to_the_end(res,7)
+            if output is not None:
+                outputs.append(output)
     except (ValueError, Exception) as e:
         pass
         # print(f"Warning in rule 8: {e}")
@@ -419,7 +542,7 @@ def _prepare_for_rule_6(rule: str, outputs: list) -> None:
         antecedent, consequent = set_ant_and_cons(rule,False)
         
         #TODO remove
-        if "^" not in antecedent or antecedent is None or antecedent == "":
+        if antecedent.count("^")<2 or antecedent == "" or consequent!="" or findNominals(antecedent)!=set():
             return
         
         if findNominals(antecedent):
@@ -463,5 +586,4 @@ def run_adapter(rule: str,isDelta:bool) -> set[str]:
     outputs.remove(rule) if rule in outputs else None
 
     return set(outputs)
-
 

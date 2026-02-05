@@ -7,10 +7,10 @@ def goalTest(formula:str)->bool:
     return len(findVariables(formula))==0
 
 
-def getRules(currentFormula:str, formula:str,numVariables:int,delta=False):
+def getRules(currentFormula:str, formula:str,numVariables:int,delta=False,runAdapters=False) -> tuple[list[tuple[int,str]], dict[str, dict[str, str]]]:
     output = []
 
-    currentInferenceRules,trackingRules = inferenceRules(formula,currentFormula)
+    currentInferenceRules,trackingRules = inferenceRules(formula,currentFormula,delta,runAdapters)
 
     for subform in currentInferenceRules.keys():
         for replacement in currentInferenceRules[subform]:
@@ -45,10 +45,10 @@ def updateRulesLogs(tracking,currentFormula,form,trackRules):
             trackRules[tempFormula] = v
 
 
-def applyInferenceRules(formulae:list,currentFormula,numberVariables,trackRules,isDelta=False):
+def applyInferenceRules(formulae:list,currentFormula,numberVariables,trackRules,isDelta=False,runAdapters=False) -> list[tuple[int,str]]:
     newRules = []
     for i,j in enumerate(formulae):
-        rulesWithScores,tracking = getRules(currentFormula,j,numberVariables,isDelta)
+        rulesWithScores,tracking = getRules(currentFormula,j,numberVariables,isDelta,runAdapters)
 
         for k in rulesWithScores:
             replacedFormula = currentFormula
@@ -68,7 +68,7 @@ def applyInferenceRules(formulae:list,currentFormula,numberVariables,trackRules,
     return newRules
 
 
-def greedyFirstSearch(formula: str, reverse = False) -> tuple[list[str], list[str], dict[str,str]]:
+def greedyFirstSearch(formula: str, reverse = False,runAdapters:bool=False) -> tuple[list[str], list[str], dict[str,str]]:
     """Perform a greedy first search on the formula to find a solution.
     A Priority stack is used with the ackermann heuristic 
     to prioritize items.
@@ -111,6 +111,7 @@ def greedyFirstSearch(formula: str, reverse = False) -> tuple[list[str], list[st
     pq.push(-len(variables),formula)   
     
     while not pq.empty() and search:
+        pq.make_unique()
         iterations+=1
         item = pq.pop() 
 
@@ -122,6 +123,7 @@ def greedyFirstSearch(formula: str, reverse = False) -> tuple[list[str], list[st
         if currentFormula in visited:
             continue
         
+
         visited.append(currentFormula)
         trackState.append(currentFormula)
 
@@ -145,6 +147,9 @@ def greedyFirstSearch(formula: str, reverse = False) -> tuple[list[str], list[st
 
         appliedAck = False
 
+        if isinstance(gamma, str):
+            gamma = [gamma]
+        
         for i,j in enumerate(gamma):
             if appliedAck:
                 continue
@@ -176,17 +181,19 @@ def greedyFirstSearch(formula: str, reverse = False) -> tuple[list[str], list[st
         #Apply rules to gamma
         if isinstance(gamma, str):
             gamma = [gamma]
-            
-        rules = applyInferenceRules(gamma,currentFormula,len(variables),trackRules)
 
-        for i in rules:
+
+        rules = applyInferenceRules(gamma,currentFormula,len(variables),trackRules,runAdapters=runAdapters)
+
+        for i in set(rules):
+            pq.push(*i)
+            
+        #Apply rules to delta
+        rules = applyInferenceRules(delta,currentFormula,len(variables),trackRules,True,runAdapters)
+
+        for i in set(rules):
             pq.push(*i)
         
-        #Apply rules to delta
-        rules = applyInferenceRules(delta,currentFormula,len(variables),trackRules,True)
-
-        for i in rules:
-            pq.push(*i)
         
 
     #Filter to only have the rules that leads to the solution
