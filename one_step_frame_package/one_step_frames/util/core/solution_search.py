@@ -57,7 +57,11 @@ def applyInferenceRules(formulae:list,currentFormula,numberVariables,trackRules,
                 replacedFormula = replacedFormula.replace("=>",",")
             
             # TODO: Limit delta rules to only nominal
-            if isDelta and tracking[j][k[1]].find("N")==-1:
+            try:
+                val = tracking[j].get(k[1])
+                if isDelta and val is not None and "N" not in val and "alt_n" not in val:
+                    continue
+            except KeyError:
                 continue
 
             replacedFormula = replacedFormula.replace(j,k[1])
@@ -136,7 +140,7 @@ def greedyFirstSearch(formula: str, reverse = False,runAdapters:bool=False) -> t
         #Split by something arbitary
         arguments = [i.split(",") for i in currentFormula.split("=>")]
 
-        if currentFormula.count("=>")>=1:
+        if currentFormula.count("=>")==1:
             gamma = arguments[0]
             delta = arguments[1]
         else:
@@ -185,17 +189,15 @@ def greedyFirstSearch(formula: str, reverse = False,runAdapters:bool=False) -> t
 
         rules = applyInferenceRules(gamma,currentFormula,len(variables),trackRules,runAdapters=runAdapters)
 
-        for i in set(rules):
+        for i in rules:
             pq.push(*i)
             
         #Apply rules to delta
-        rules = applyInferenceRules(delta,currentFormula,len(variables),trackRules,True,runAdapters)
+        rules = applyInferenceRules(delta,currentFormula,len(variables),trackRules,True,runAdapters=runAdapters)
 
-        for i in set(rules):
+        for i in rules:
             pq.push(*i)
-        
-        
-
+          
     #Filter to only have the rules that leads to the solution
     trackRulesFiltered = {k:v for k,v in trackRules.items() if k in trackState}
 

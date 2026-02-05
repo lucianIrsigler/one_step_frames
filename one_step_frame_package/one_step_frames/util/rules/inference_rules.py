@@ -46,7 +46,7 @@ def processFormulaWithAST(formula: str,rootOnly:bool=False) -> list[str]:
 
 
 def run_adapters_on_formula(formulae:list[str],formula:str,delta:bool,trackRules,resultDict,adapters=ALLOWED_ADAPTERS)-> None:
-    for i in ALLOWED_ADAPTERS:
+    for i in adapters:
         for j in formulae:
             additional_inferences = run_adapter(j,i,delta)
             for k in additional_inferences:
@@ -83,7 +83,7 @@ def inferenceRules(formula: str,currentFormula:str,delta:bool,runAdapters:bool=F
     if formula.strip()=="" or formula=="_":
         return ({},{})
     try:
-        formulae = processFormulaWithAST(formula)
+        formulae = processFormulaWithAST(formula,True)
         formulae = list(set(formulae))
         inferenceEngignes = [NominalInference(currentFormula),AdjunctionInference()]
         resultDict = {i:[] for i in formulae}
@@ -101,6 +101,6 @@ def inferenceRules(formula: str,currentFormula:str,delta:bool,runAdapters:bool=F
         return ({},{})
     
     if runAdapters:
-        run_adapters_on_formula(formulae,currentFormula,delta,trackRules,resultDict)
+        run_adapters_on_formula(formulae,formula,delta,trackRules,resultDict)
         
     return (resultDict,trackRules)

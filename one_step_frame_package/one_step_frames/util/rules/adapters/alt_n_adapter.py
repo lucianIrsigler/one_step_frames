@@ -555,7 +555,7 @@ def _prepare_for_rule_6(rule: str, outputs: list) -> None:
         # print(f"Warning in preparation: {e}")
 
 
-def run_adapter(rule: str,isDelta:bool) -> set[str]:
+def run_adapter(rule: str,isDelta:bool) -> list[str]:
     """Apply SQEMA rules in sequence to transform a formula.
     
     This function applies Alt-N rules in a specific order to transform
@@ -585,5 +585,5 @@ def run_adapter(rule: str,isDelta:bool) -> set[str]:
 
     outputs.remove(rule) if rule in outputs else None
 
-    return set(outputs)
+    return outputs
 
