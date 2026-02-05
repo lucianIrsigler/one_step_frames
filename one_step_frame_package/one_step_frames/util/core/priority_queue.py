@@ -22,6 +22,17 @@ class PriorityQueue:
         self.counter += 1
     
     
+    def make_unique(self):
+        """ Make the items in the priority queue unique based on their item value.
+        """
+        unique_items = {}
+        for priority, count, item in self.heap:
+            if item not in unique_items:
+                unique_items[item] = (priority, count, item)
+        
+        self.heap = list(unique_items.values())
+        heapq.heapify(self.heap)
+
 
     def pop(self):
         """ Pop the item with the highest priority from the queue.
