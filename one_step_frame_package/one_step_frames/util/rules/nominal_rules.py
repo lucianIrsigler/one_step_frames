@@ -201,38 +201,3 @@ class NominalInference:
         except InferenceError as e:
             print(f"Unable to parse formula for inferences: {e}")
             return []
-    
-
-def process_formula_with_ast(formula: str) -> List[str]:
-    """Process formula using AST and return nominal inferences."""
-    tree = AbstractSyntaxTree()
-    tree.buildTree(formula)
-    
-    if tree.root is None:
-        raise InferenceError("Failed to build AST from formula")
-    
-    nodes = getSpecificNodes(tree.root, "<")
-    if not nodes:
-        raise InferenceError("No '<' nodes found in AST")
-    
-    infix = toInfix(nodes[0])
-    inference_engine = NominalInference()
-    return inference_engine.get_inferences(infix)
-
-
-def main():
-    """Main execution function."""
-    formula = "#x<#i*(#x)"
-    try:
-        formulas = process_formula_with_ast(formula)
-        print("Available inference rules:")
-        for formula_rule in formulas:
-            print(f"  {formula_rule}")
-    except InferenceError as e:
-        print(f"Error: {e}")
-    except Exception as e:
-        print(f"Unexpected error: {e}")
-
-
-if __name__ == "__main__":
-    main()
