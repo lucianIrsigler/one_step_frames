@@ -136,7 +136,7 @@ def greedyFirstSearch(formula: str, reverse = False,runAdapters:bool=False) -> t
         #Split by something arbitary
         arguments = [i.split(",") for i in currentFormula.split("=>")]
 
-        if currentFormula.count("=>")==1:
+        if currentFormula.count("=>")>=1:
             gamma = arguments[0]
             delta = arguments[1]
         else:
